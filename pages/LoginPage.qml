@@ -14,7 +14,7 @@ FluPage {
 
     // === 核心逻辑: JS 实现的 HTTP 请求 ===
     function performLogin(username, password) {
-        if(username === "admin" && password === "123456" && !useBackend.checked){
+        if(!useBackend.checked){
             console.log("前端本地登录")
             loginPage.loginSuccessSignal()
             return;

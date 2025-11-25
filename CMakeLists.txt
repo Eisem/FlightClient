@@ -26,12 +26,9 @@ qt_add_qml_module(appFlightClient
         pages/FlightSearch.qml
         pages/Orders.qml
         pages/DashboardPage.qml
-    SOURCES
-        controller/httpservice.h
-        controller/httpservice.cpp
-        controller/authcontroller.h
-        controller/authcontroller.cpp
-        QML_FILES pages/RegisterPage.qml
+        pages/RegisterPage.qml
+    RESOURCES
+        figures/logo.png
 )
 
 set_target_properties(appFlightClient PROPERTIES

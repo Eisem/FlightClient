@@ -724,6 +724,7 @@ Item {
             spacing: 0
             FluIconButton{
                 id:btn_back
+                visible:false // 自己加的
                 iconSource: FluentIcons.ChromeBack
                 Layout.leftMargin: 5
                 Layout.alignment: Qt.AlignVCenter
@@ -792,15 +793,27 @@ Item {
             }
             Image{
                 id:image_logo
-                Layout.preferredHeight: 20
-                Layout.preferredWidth: 20
+
+                // 原设置
+                // Layout.preferredHeight: 20
+                // Layout.preferredWidth: 20
+                // source: control.logo
+                // Layout.leftMargin: {
+                //     if(btn_menu.visible){
+                //         return 12
+                //     }
+                //     return 5
+                // }
+
+                // 我的设置
+                Layout.preferredHeight: 38
+                Layout.preferredWidth: 38
                 source: control.logo
                 Layout.leftMargin: {
-                    if(btn_menu.visible){
-                        return 12
-                    }
-                    return 5
+                    // 【修改这里】不管菜单显示与否，都给一个合适的左边距（例如 15）
+                    return 15
                 }
+
                 sourceSize: Qt.size(40,40)
                 Layout.alignment: Qt.AlignVCenter
                 MouseArea{

@@ -7,7 +7,7 @@ FluWindow {
     id: appWindow
     width: 1000
     height: 640
-    title: "航班管理系统"
+    title: ""
     visible: true
 
     // === 新增: 全局存储 UID ===

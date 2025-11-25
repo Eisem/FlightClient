@@ -9,12 +9,13 @@ FluPage {
     // 使用 NavigationView 实现侧边菜单
     FluNavigationView {
         id: nav_view
+
         cellHeight: 55
         anchors.fill: parent
-        // 顶部 Logo 或标题区
-        logo: "qrc:/qt/qml/FlightClient/assets/logo.png" // 如果没有logo图片，这行可以先注释
-        title: "航班管理系统"
 
+        // 顶部 Logo 或标题区
+        logo: "qrc:/qt/qml/FlightClient/figures/logo.png"
+        title: "航班管理系统"
 
         // 定义左侧菜单项
         items: FluObject{
