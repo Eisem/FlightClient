@@ -49,7 +49,7 @@ bin/
 *.qbs.user*
 CMakeLists.txt.user*
 
-Appconfig.qml
+
 
 # xemacs temporary files
 *.flc
