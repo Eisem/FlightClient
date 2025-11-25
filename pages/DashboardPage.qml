@@ -1,0 +1,64 @@
+import QtQuick
+import QtQuick.Controls
+import FluentUI
+
+FluPage {
+    id: dashboard
+    // FluPage 默认填满父容器
+
+    // 使用 NavigationView 实现侧边菜单
+    FluNavigationView {
+        id: nav_view
+        cellHeight: 55
+        anchors.fill: parent
+        // 顶部 Logo 或标题区
+        logo: "qrc:/qt/qml/FlightClient/assets/logo.png" // 如果没有logo图片，这行可以先注释
+        title: "航班管理系统"
+
+
+        // 定义左侧菜单项
+        items: FluObject{
+            // 菜单项 1：航班查询
+            FluPaneItem {
+                title: "航班查询"
+                icon: FluentIcons.Airplane // 使用内置图标
+                url: "qrc:/qt/qml/FlightClient/pages/FlightSearch.qml"   // 点击后加载同目录下的这个文件
+                onTap: {
+                    // 可以在这里处理点击逻辑，或者依靠 url 自动跳转
+                    nav_view.push(url)
+                }
+            }
+
+            // 菜单项 2：我的订单
+            FluPaneItem {
+                title: "我的订单"
+                icon: FluentIcons.ShoppingCart
+                url: "qrc:/qt/qml/FlightClient/pages/Orders.qml"
+                onTap: {
+                    nav_view.push(url)
+                }
+            }
+        }
+
+        // 底部菜单项（通常放设置或退出登录）
+        footerItems: FluObject {
+            FluPaneItem {
+                title: "退出登录"
+                icon: FluentIcons.SignOut
+                onTap: {
+                    // 调用 Main.qml 里的 logout 函数（如果定义了的话）
+                    // 或者直接重置 Loader
+                    // 这里假设 Main.qml 有一个 logout() 函数
+                    appWindow.currentUid = ""
+                    pageLoader.source = "pages/LoginPage.qml"
+                }
+            }
+        }
+
+        // 页面加载完成后，默认选中第一项
+        Component.onCompleted: {
+            nav_view.setCurrentIndex(0)
+            nav_view.push("FlightSearch.qml")
+        }
+    }
+}
