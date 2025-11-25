@@ -14,11 +14,12 @@ FluPage {
 
     // === 核心逻辑: JS 实现的 HTTP 请求 ===
     function performLogin(username, password) {
-        if(username === "admin" && password === "123456"){
-            console.log("123456 login")
+        if(username === "admin" && password === "123456" && !useBackend.checked){
+            console.log("前端本地登录")
             loginPage.loginSuccessSignal()
             return;
         }
+        console.log("尝试连接后端登录")
 
         // 1. 清空之前的错误
         errorMessage = ""
@@ -26,7 +27,7 @@ FluPage {
         // 2. 创建 XMLHttpRequest 对象
         var xhr = new XMLHttpRequest()
         var url = AppConfig.apiBase + "/login" // 你的后端地址
-
+//=====================================^^^^^^^====这里的路由根据实际情况修改
         xhr.open("POST", url, true)
         xhr.setRequestHeader("Content-Type", "application/json")
 
@@ -35,6 +36,7 @@ FluPage {
             // readyState == 4 表示请求完成
             if (xhr.readyState === XMLHttpRequest.DONE) {
                 try{
+//=========================      这一段是需要根据情况修改的          ============
                     var response = JSON.parse(xhr.responseText)
 
                     if(response.status === "success" && response.data.uid){
@@ -46,6 +48,7 @@ FluPage {
                     }else{
                         errorMessage = response.message
                     }
+//===========================================================================
                 }catch(e){
                     console.log("解析失败:", e)
                     errorMessage = "服务器响应错误: " + xhr.status + " (无法解析响应内容)"
@@ -54,11 +57,13 @@ FluPage {
         }
 
         // 4. 发送 JSON 数据
+//=+=+=+=+=+=+=+=+=+=+=     这一段需要根据实际修改   +=+=+=+=+=+=
         var data = {
             "username": username,
             "password": password
         }
         xhr.send(JSON.stringify(data))
+//+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+
     }
 
     // 界面部分
@@ -104,6 +109,8 @@ FluPage {
             }
         }
 
+
+
     }
 
     FluFilledButton{
@@ -112,5 +119,12 @@ FluPage {
         onClicked: {
             loginPage.clickRegisterButton()
         }
+    }
+
+    FluCheckBox{
+        id: useBackend
+        text: "是否与后端联调"
+        checked: True
+        y:300
     }
 }
