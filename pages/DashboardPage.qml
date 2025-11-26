@@ -1,21 +1,79 @@
 import QtQuick
 import QtQuick.Controls
 import FluentUI
+import QtQuick.Layouts
 
 FluPage {
     id: dashboard
     // FluPage 默认填满父容器
 
+    // 顶部栏
+    Rectangle {
+        id: custom_header  // 必须要有 ID，下面要用
+        height: 45         // 固定高度
+        color: "#FFFFFF"   // 白色背景
+        z: 999
+
+        // 锚定在窗口最顶部
+        anchors.top: parent.top
+        anchors.left: parent.left
+        anchors.right: parent.right
+
+        // 底部灰线
+        Rectangle {
+            height: 1
+            color: "#e0e0e0"
+            anchors.bottom: parent.bottom
+            anchors.left: parent.left
+            anchors.right: parent.right
+        }
+
+        // 顶部栏内容布局
+        RowLayout {
+            anchors.fill: parent
+            anchors.leftMargin: 20
+            anchors.rightMargin: 20
+            spacing: 15
+
+            // --- 把头像和标题搬到这里来 ---
+            Image {
+                // 你的头像路径
+                source: "qrc:/qt/qml/FlightClient/figures/logo.png"
+                Layout.preferredWidth: 32
+                Layout.preferredHeight: 32
+                fillMode: Image.PreserveAspectFit
+            }
+
+            Text {
+                text: "维哥航班查询"
+                font.pixelSize: 16
+                font.bold: true
+                color: "#333333"
+            }
+
+            // 右侧占位或按钮
+            Item { Layout.fillWidth: true }
+            FluTextButton { text: "登录" }
+        }
+    }
+
     // 使用 NavigationView 实现侧边菜单
     FluNavigationView {
         id: nav_view
 
+        hideNavAppBar: true // 隐藏顶部栏
+
         cellHeight: 55
-        anchors.fill: parent
 
         // 顶部 Logo 或标题区
         logo: "qrc:/qt/qml/FlightClient/figures/logo.png"
         title: "航班管理系统"
+
+        // 锚定在自定义栏下面
+        anchors.top: custom_header.bottom
+        anchors.bottom: parent.bottom
+        anchors.left: parent.left
+        anchors.right: parent.right
 
         // 定义左侧菜单项
         items: FluObject{
