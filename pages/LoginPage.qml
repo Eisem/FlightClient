@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Window
 import FluentUI
+import FlightClient
 
 FluPage {
     id: loginPage
@@ -26,7 +27,8 @@ FluPage {
 
         // 2. 创建 XMLHttpRequest 对象
         var xhr = new XMLHttpRequest()
-        var url = AppConfig.apiBase + "/login" // 你的后端地址
+        var url = backendBaseUrl + "/login" // 你的后端地址
+        console.log(url)
 //=====================================^^^^^^^====这里的路由根据实际情况修改
         xhr.open("POST", url, true)
         xhr.setRequestHeader("Content-Type", "application/json")

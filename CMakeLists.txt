@@ -21,7 +21,6 @@ qt_add_qml_module(appFlightClient
     VERSION 1.0
     QML_FILES
         Main.qml
-        AppConfig.qml
         pages/LoginPage.qml
         pages/FlightSearch.qml
         pages/Orders.qml
