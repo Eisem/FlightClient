@@ -17,9 +17,8 @@ FluWindow {
     Loader {
         id: pageLoader
         anchors.fill: parent
-        source: "pages/LoginPage.qml"
+        source: "pages/DashboardPage.qml"
     }
-
     Connections {
         target: pageLoader.item
         ignoreUnknownSignals: true
@@ -44,12 +43,28 @@ FluWindow {
         }
     }
 
+    Connections {
+        target: pageLoader.item
+        ignoreUnknownSignals: true
+
+        // 监听登录成功信号
+        function onClickLoginButton() {
+            // 登录成功后，跳转到 Dashboard
+            console.log("start register")
+            appWindow.gotoLoginPage()
+        }
+    }
+
     function gotoDashboard() {
         pageLoader.source = "pages/DashboardPage.qml"
     }
 
     function gotoRegisterPage() {
         pageLoader.source = "pages/RegisterPage.qml"
+    }
+
+    function gotoLoginPage() {
+        pageLoader.source = "pages/LoginPage.qml"
     }
 
     function logout() {

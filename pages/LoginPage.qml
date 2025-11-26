@@ -3,6 +3,7 @@ import QtQuick.Controls
 import QtQuick.Window
 import FluentUI
 import FlightClient
+import QtQuick.Layouts
 
 FluPage {
     id: loginPage
@@ -105,15 +106,19 @@ FluPage {
 
         FluText {
             text: "系统登录"
+            width: 150
+            x:75
             font.pixelSize: 24
             font.bold: true
-        }
 
+        }
         FluTextBox {
             id: inputUsername
             placeholderText: "请输入用户名 (admin)"
             width: 250
         }
+
+
 
         FluTextBox {
             id: inputPassword
@@ -133,28 +138,33 @@ FluPage {
 
         FluFilledButton {
             text: "登录"
-            width: 250
+            x:50
+            width: 150
             onClicked: {
                 // 调用上面定义的 JS 函数
                 performLogin(inputUsername.text, inputPassword.text)
 
             }
         }
-
-    }
-
-    FluFilledButton{
-        text: "注册"
-        width: 100
-        onClicked: {
-            loginPage.clickRegisterButton()
+        FluFilledButton{
+            text: "注册"
+            x:50
+            width: 150
+            onClicked: {
+                loginPage.clickRegisterButton()
+            }
         }
-    }
 
+    }
     FluCheckBox{
         id: useBackend
         text: "是否与后端联调"
         checked: True
-        y:300
+        anchors.bottom: parent.bottom
+        anchors.left: parent.left
     }
+
+
+
+
 }

@@ -6,7 +6,7 @@ import QtQuick.Layouts
 FluPage {
     id: dashboard
     // FluPage 默认填满父容器
-
+    signal clickLoginButton()
     // 顶部栏
     Rectangle {
         id: custom_header  // 必须要有 ID，下面要用
@@ -45,7 +45,7 @@ FluPage {
             }
 
             Text {
-                text: "维哥航班查询"
+                text: "long哥航班查询"
                 font.pixelSize: 16
                 font.bold: true
                 color: "#333333"
@@ -53,7 +53,12 @@ FluPage {
 
             // 右侧占位或按钮
             Item { Layout.fillWidth: true }
-            FluTextButton { text: "登录" }
+            FluTextButton {
+                text: "登录"
+                onClicked: {
+                    dashboard.clickLoginButton()
+                }
+            }
         }
     }
 
