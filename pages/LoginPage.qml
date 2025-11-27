@@ -98,62 +98,107 @@ FluPage {
         xhr.send(JSON.stringify(data))
 //+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+
     }
+    FluFrame{
+        anchors.centerIn: parent
+        width:400
+        height: 450
+        Column {
+            anchors.centerIn: parent
+            spacing: 20
+            FluText {
+                anchors.onTopChanged: parent
+                text: "系统登录"
+                width: 150
+                x:75
+                font.pixelSize:24
+                font.bold: true
+            }
+            Item {
+                width: 250; height: 50
+
+                Text {
+                    id: labelText // 给它个 ID，方便别人引用
+                    text: "用户名："
+                    anchors.left: parent.left
+                    anchors.verticalCenter: parent.verticalCenter // 垂直居中
+                    font.pixelSize:15
+                    font.bold: true
+                }
+
+                FluTextBox {
+                    id:inputUsername
+                    // 重点：我的左边，要锁在 labelText 的右边
+                    anchors.left: labelText.right
+
+                    anchors.right:parent.right
+                    placeholderText: "请输入用户名 (admin)"
+                    anchors.verticalCenter: parent.verticalCenter
+                    width: 200
+                }
+            }
+
+            Item {
+                width: 250; height: 50
+
+                Text {
+                    id: labelText2 // 给它个 ID，方便别人引用
+                    text: "密   码:"
+                    anchors.left: parent.left
+                    anchors.right:labelText.right
+                    anchors.verticalCenter: parent.verticalCenter // 垂直居中
+                    font.pixelSize:15
+                    font.bold: true
+                }
+
+                FluTextBox {
+                    id:inputPassword
+                    // 重点：我的左边，要锁在 labelText 的右边
+                    anchors.left: labelText2.right
+                    anchors.leftMargin: 10
+                    anchors.right:parent.right
+                    placeholderText: "请输入密码 (123456)"
+                    anchors.verticalCenter: parent.verticalCenter
+                    echoMode: TextInput.Password
+                    width: 200
+                }
+            }
+
+
+
+
+
+
+            // 错误提示文字
+            FluText {
+                visible: errorMessage !== ""
+                text: errorMessage
+                color: "red"
+                wrapMode: Text.Wrap
+                width: 250
+            }
+
+            FluFilledButton {
+                text: "登录"
+                x:50
+                width: 150
+                onClicked: {
+                    // 调用上面定义的 JS 函数
+                    performLogin(inputUsername.text, inputPassword.text)
+
+                }
+            }
+            FluFilledButton{
+                text: "注册"
+                x:50
+                width: 150
+                onClicked: {
+                    loginPage.clickRegisterButton()
+                }
+            }
+    }
 
     // 界面部分
-    Column {
-        anchors.centerIn: parent
-        spacing: 20
 
-        FluText {
-            text: "系统登录"
-            width: 150
-            x:75
-            font.pixelSize: 24
-            font.bold: true
-
-        }
-        FluTextBox {
-            id: inputUsername
-            placeholderText: "请输入用户名 (admin)"
-            width: 250
-        }
-
-
-
-        FluTextBox {
-            id: inputPassword
-            placeholderText: "请输入密码 (123456)"
-            echoMode: TextInput.Password
-            width: 250
-        }
-
-        // 错误提示文字
-        FluText {
-            visible: errorMessage !== ""
-            text: errorMessage
-            color: "red"
-            wrapMode: Text.Wrap
-            width: 250
-        }
-
-        FluFilledButton {
-            text: "登录"
-            x:50
-            width: 150
-            onClicked: {
-                // 调用上面定义的 JS 函数
-                performLogin(inputUsername.text, inputPassword.text)
-
-            }
-        }
-        FluFilledButton{
-            text: "注册"
-            x:50
-            width: 150
-            onClicked: {
-                loginPage.clickRegisterButton()
-            }
-        }
 
     }
     FluCheckBox{

@@ -66,7 +66,7 @@ FluPage {
         spacing: 20
 
         FluText {
-            text: "系统登录"
+            text: "用户注册"
             font.pixelSize: 24
             font.bold: true
         }
