@@ -99,20 +99,27 @@ FluPage {
 //+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+
     }
     FluFrame{
+        radius: 15
         anchors.centerIn: parent
         width:400
         height: 450
+        //RGBA，调透明度
+        color: Qt.rgba(1, 1, 1, 0.5)
         Column {
             anchors.centerIn: parent
             spacing: 20
             FluText {
                 anchors.onTopChanged: parent
+
                 text: "系统登录"
                 width: 150
                 x:75
                 font.pixelSize:24
                 font.bold: true
             }
+
+
+
             Item {
                 width: 250; height: 50
 
