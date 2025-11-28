@@ -45,7 +45,7 @@ FluPage {
             }
 
             Text {
-                text: "long哥航班查询"
+                text: "维哥航班查询"
                 font.pixelSize: 16
                 font.bold: true
                 color: "#333333"

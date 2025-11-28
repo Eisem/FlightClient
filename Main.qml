@@ -55,6 +55,24 @@ FluWindow {
         }
     }
 
+    Connections{
+        target: pageLoader.item
+        ignoreUnknownSignals: true
+
+        function onRegisterBackClicked(){
+            appWindow.gotoLoginPage()
+        }
+    }
+
+    Connections{
+        target: pageLoader.item
+        ignoreUnknownSignals: true
+
+        function onLoginBackClicked(){
+            appWindow.gotoDashboard()
+        }
+    }
+
     function gotoDashboard() {
         pageLoader.source = "pages/DashboardPage.qml"
     }

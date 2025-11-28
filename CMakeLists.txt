@@ -28,6 +28,7 @@ qt_add_qml_module(appFlightClient
         pages/RegisterPage.qml
     RESOURCES
         figures/logo.png
+        figures/loginBackground.png
 )
 
 set_target_properties(appFlightClient PROPERTIES

@@ -7,6 +7,7 @@ FluPage {
     id: registerPage
 
     // signal loginSuccessSignal()
+    signal registerBackClicked()
 
     // 用于显示错误信息的变量
     property string errorMessage: ""
@@ -58,6 +59,22 @@ FluPage {
             "password": password
         }
         xhr.send(JSON.stringify(data))
+    }
+
+    FluIconButton{
+        iconSource: FluentIcons.ChromeBack
+        iconSize: 15
+        text:"返回登录" // 鼠标悬停时显示
+
+        // 定位到左上角
+        anchors.left: parent.left
+        anchors.top: parent.top
+        anchors.topMargin: 5
+        anchors.leftMargin: 8
+
+        onClicked: {
+            registerPage.registerBackClicked()
+        }
     }
 
     // 界面部分
