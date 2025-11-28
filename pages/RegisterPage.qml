@@ -15,19 +15,25 @@ FluPage {
     property string errorMessage: ""
 
     // === 核心逻辑: JS 实现的 HTTP 请求 ===
-    function performRegister(username, password) {
-        if(username === "admin" && password === "123456"){
-            console.log("123456 login")
-            loginPage.loginSuccessSignal()
-            return;
+    function performRegister(username, password1, password2, telephone,email,ID) {
+        errorMessage = ""
+        if(password1 !== password2){
+
+            errorMessage = "输入的密码不一致"
+            return
+        }
+        if(username === "admin"){
+            showSuccess("注册成功")
+            registerPage.registerBackClicked()
+            return
         }
 
         // 1. 清空之前的错误
-        errorMessage = ""
+
 
         // 2. 创建 XMLHttpRequest 对象
         var xhr = new XMLHttpRequest()
-        var url = AppConfig.apiBase + "/login" // 你的后端地址
+        var url = backendBaseUrl + "/register" // 你的后端地址
 
         xhr.open("POST", url, true)
         xhr.setRequestHeader("Content-Type", "application/json")
@@ -36,21 +42,32 @@ FluPage {
         xhr.onreadystatechange = function() {
             // readyState == 4 表示请求完成
             if (xhr.readyState === XMLHttpRequest.DONE) {
-                try{
-                    var response = JSON.parse(xhr.responseText)
+                if (xhr.status === 200) {
+                    try {
+                        var response = JSON.parse(xhr.responseText)
 
-                    if(response.status === "success" && response.data.uid){
-                        appWindow.currentUid = response.data.uid
-                        showSuccess("登录成功")
-                        loginPage.loginSuccessSignal()
-                    }else if(response.status === "success"){
-                        errorMessage = "登录异常：返回数据缺少 UID"
-                    }else{
-                        errorMessage = response.message
+                        // 【修改点3】根据后端 C++ 的结构修改字段获取方式
+                        // 后端返回的是: { "status": "success", "user": { "id": 1, ... } }
+                        if(response.status === "success"){
+                            showSuccess("注册成功")
+                            registerPage.registerBackClicked()
+                        }else{
+                            errorMessage = response.message || "登录失败: 未知错误"
+                        }
+                    } catch(e) {
+                        console.log("JSON解析失败:", e)
+                        errorMessage = "数据解析错误"
                     }
-                }catch(e){
-                    console.log("解析失败:", e)
-                    errorMessage = "服务器响应错误: " + xhr.status + " (无法解析响应内容)"
+                } else {
+                    // 处理非 200 的情况 (比如 401 密码错误, 404 找不到地址)
+                    try {
+                        // 尝试解析后端返回的 JSON 错误信息
+                        var errResp = JSON.parse(xhr.responseText)
+                        errorMessage = errResp.message || ("请求失败: " + xhr.status)
+                    } catch(e) {
+                        // 如果后端返回的是纯文本而不是JSON（或者网页），直接显示状态码
+                        errorMessage = "服务器错误: " + xhr.status + " " + xhr.statusText
+                    }
                 }
             }
         }
@@ -58,7 +75,10 @@ FluPage {
         // 4. 发送 JSON 数据
         var data = {
             "username": username,
-            "password": password
+            "password": password1,
+            "telephone": telephone,
+            "email":email,
+            "ID":ID
         }
         xhr.send(JSON.stringify(data))
     }
@@ -283,7 +303,7 @@ FluPage {
                 width: 150
                 onClicked: {
                     // 调用上面定义的 JS 函数
-                    performLogin(inputUsername.text, inputPassword.text)
+                    performRegister(inputUsername.text, inputPassword1.text,inputPassword2.text,inputTelephone.text,inputEmial.text,inputID.text)
 
                 }
             }
