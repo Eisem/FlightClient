@@ -32,6 +32,7 @@ qt_add_qml_module(appFlightClient
         figures/123.jpg
         QML_FILES
         QML_FILES pages/UserCenterPage.qml
+        QML_FILES pages/Avatar.qml
 )
 
 set_target_properties(appFlightClient PROPERTIES
