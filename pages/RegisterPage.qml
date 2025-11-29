@@ -33,7 +33,7 @@ FluPage {
 
         // 2. 创建 XMLHttpRequest 对象
         var xhr = new XMLHttpRequest()
-        var url = backendBaseUrl + "/register" // 你的后端地址
+        var url = backendBaseUrl + "/api/register" // 你的后端地址
 
         xhr.open("POST", url, true)
         xhr.setRequestHeader("Content-Type", "application/json")
