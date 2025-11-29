@@ -7,6 +7,7 @@ FluPage {
     id: dashboard
     // FluPage 默认填满父容器
     signal clickLoginButton()
+    signal clickUserCenterButton()
     // 顶部栏
     Rectangle {
         id: custom_header  // 必须要有 ID，下面要用
@@ -45,7 +46,7 @@ FluPage {
             }
 
             Text {
-                text: "维哥航班查询"
+                text: "long哥航班查询"
                 font.pixelSize: 16
                 font.bold: true
                 color: "#333333"
@@ -53,6 +54,30 @@ FluPage {
 
             // 右侧占位或按钮
             Item { Layout.fillWidth: true }
+
+            Item{
+                width: 32
+                height:32
+                Image {
+                    // 你的头像路径
+                    source: "qrc:/qt/qml/FlightClient/figures/123.jpg"
+                    width: 32
+                    height: 32
+                    fillMode: Image.PreserveAspectFit
+                }
+
+                FluButton{
+                    anchors.fill: parent
+                    opacity: 0
+                    z:10
+                    onClicked: {
+                        dashboard.clickUserCenterButton()
+                    }
+                }
+            }
+
+
+
             FluTextButton {
                 text: "登录"
                 onClicked: {
@@ -65,7 +90,7 @@ FluPage {
     // 使用 NavigationView 实现侧边菜单
     FluNavigationView {
         id: nav_view
-
+        cellWidth: 200
         hideNavAppBar: true // 隐藏顶部栏
 
         cellHeight: 55
@@ -102,6 +127,8 @@ FluPage {
                     nav_view.push(url)
                 }
             }
+
+
         }
 
         // 底部菜单项（通常放设置或退出登录）
