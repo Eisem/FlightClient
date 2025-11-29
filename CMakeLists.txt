@@ -29,7 +29,9 @@ qt_add_qml_module(appFlightClient
     RESOURCES
         figures/logo.png
         figures/loginBackground.png
+        figures/123.jpg
         QML_FILES
+        QML_FILES pages/UserCenterPage.qml
 )
 
 set_target_properties(appFlightClient PROPERTIES

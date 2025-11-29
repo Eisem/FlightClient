@@ -9,7 +9,8 @@ FluWindow {
     height: 640
     title: "航班管理系统"
     visible: true
-
+    minimumHeight: 640
+    minimumWidth: 1000
     // === 新增: 全局存储 UID ===
     // 所有页面都可以通过 appWindow.currentUid 访问
     property string currentUid: ""
@@ -73,6 +74,15 @@ FluWindow {
         }
     }
 
+    Connections{
+        target: pageLoader.item
+        ignoreUnknownSignals: true
+
+        function onClickUserCenterButton(){
+            appWindow.gotoUserCenterPage()
+        }
+    }
+
     function gotoDashboard() {
         pageLoader.source = "pages/DashboardPage.qml"
     }
@@ -84,6 +94,11 @@ FluWindow {
     function gotoLoginPage() {
         pageLoader.source = "pages/LoginPage.qml"
     }
+
+    function gotoUserCenterPage() {
+        pageLoader.source = "pages/UserCenterPage.qml"
+    }
+
 
     function logout() {
         // 退出时清空 UID

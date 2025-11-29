@@ -18,10 +18,10 @@ FluPage {
     function performRegister(username, password1, password2, telephone,email,ID) {
         errorMessage = ""
         if(password1 !== password2){
-
             errorMessage = "输入的密码不一致"
             return
         }
+        //
         if(username === "admin"){
             showSuccess("注册成功")
             registerPage.registerBackClicked()

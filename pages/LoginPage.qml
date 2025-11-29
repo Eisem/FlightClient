@@ -261,10 +261,7 @@ FluPage {
                 }
             }
     }
-
     // 界面部分
-
-
     }
     FluCheckBox{
         id: useBackend
@@ -273,8 +270,5 @@ FluPage {
         anchors.bottom: parent.bottom
         anchors.left: parent.left
     }
-
-
-
 
 }
