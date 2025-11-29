@@ -7,6 +7,8 @@ import FluentUI
 FluScrollablePage {
     id: root
 
+    // signal searchFlightSuccess(var FlightList)
+
     // --- 0. 模拟城市数据模型 ---
     ListModel {
         id: cityModel
@@ -26,6 +28,7 @@ FluScrollablePage {
     property bool isRoundTrip: radioRoundTrip.checked
     property string selectedClass: comboClass.currentText
     property bool isSelectingFrom: true
+    property bool isSearching: false // 标记搜索状态，用于禁用按钮防止重复点击
 
     // 格式化日期：2025-11-28
     function formatDate(d) {
@@ -34,6 +37,163 @@ FluScrollablePage {
 
     function swapCities() {
         var temp = fromCity; fromCity = toCity; toCity = temp
+    }
+
+    // 辅助函数：从 "珠海(ZUH)" 中提取 "ZUH"
+    function getCityCode(cityName) {
+        var matches = cityName.match(/\(([^)]+)\)/);
+        if (matches && matches.length > 1) {
+            return matches[1];
+        }
+        return ""; // 没找到代码
+    }
+
+    ListModel {id: resultModel}
+
+    // 标记最近一次搜索是不是往返搜索（用于控制Tab栏显示）
+    property bool hasSearched: false
+    // 往返逻辑控制 0 -> 单程, 1 -> 去程, 2 -> 返程
+    property int activeTab: 0
+    // 暂存第一程保存的航班数据
+    property var firstLegData: null
+
+    // === 核心逻辑：处理点击航班 ===
+    function handleSelectFlight(flightData){
+        // 1. 单程模式：直接下单
+        if (!isRoundTrip) {
+            console.log("单程下单：", flightData.flight_no)
+            showSuccess("已选择航班: " + flightData.flight_no)
+            // root.searchFlightSuccess([flightData])
+            return
+        }
+
+        // 2. 往返模式
+        if (activeTab === 0) {
+            // --- 当前在选去程 ---
+            firstLegData = flightData // 【保留】存入 firstLegData
+            showSuccess("去程已选 " + flightData.flight_no + "，正在查询返程...")
+            // 切换到返程视图
+            activeTab = 1
+            // 刷新列表查返程
+            refreshList()
+        } else {
+            // --- 当前在选返程 (最终下单) ---
+            if(!firstLegData){
+                showError("异常：去程数据丢失，请重新选择")
+                activeTab = 0
+                refreshList()
+                return
+            }
+            console.log("往返下单: 去程" + firstLegData.flight_no + " + 返程" + flightData.flight_no)
+            showSuccess("往返行程已确认！")
+            // root.searchFlightSuccess([firstLegData, flightData])
+        }
+    }
+
+    // === 统一搜索入口 ===
+    function performSearch(){
+        if(fromCity == toCity){ showError("出发地和目的地不能相同"); return }
+
+        if(isRoundTrip) hasSearched = true
+        else hasSearched = false
+        // 重置状态
+        firstLegData = null
+        activeTab = 0
+
+        // 发起搜索
+        refreshList()
+    }
+
+    // === 列表刷新逻辑 ===
+    // 这是一个中间层，负责决定把什么参数传给 performSearchInternal
+    function refreshList() {
+        // 计算当前应该查什么
+        var targetFrom, targetTo, targetDate
+
+        if (!isRoundTrip) {
+            // 单程
+            targetFrom = fromCity
+            targetTo = toCity
+            targetDate = departureDate
+        } else {
+            // 往返：根据 activeTab 决定
+            targetFrom = (activeTab === 0) ? fromCity : toCity
+            targetTo   = (activeTab === 0) ? toCity   : fromCity
+            targetDate = (activeTab === 0) ? departureDate : returnDate
+        }
+
+        // 调用原本的网络请求函数，传入计算好的参数
+        performSearchInternal(targetFrom, targetTo, targetDate)
+    }
+
+    function performSearchInternal(currentFrom, currentTo, currentDate){
+        isSearching = true
+        console.log("开始搜索航班")
+        resultModel.clear() // 先清空旧结果
+
+        var xhr = new XMLHttpRequest
+        var url = backendBaseUrl + "/api/search_flights"
+        console.log("请求地址：" + url)
+        xhr.open("POST", url, true)
+        xhr.setRequestHeader("Content-Type", "application/json")
+        xhr.onreadystatechange = function(){
+            if(xhr.readyState === XMLHttpRequest.DONE){
+                isSearching = false // 搜索完成， 解锁状态
+                if(xhr.status === 200){
+                    try {
+                        var response = JSON.parse(xhr.responseText)
+                        if(response.status === "success"){
+                            var list = response.data || []
+                            if(list.length === 0) showInfo("未找到航班")
+                            for(var i = 0; i < list.length; i ++){
+                                resultModel.append(list[i])
+                            }
+                        } else {
+                            showerror(response.message || "查询失败")
+                        }
+                    } catch(e){
+                        console.log("Json解析失败")
+                        showError("数据解析失败")
+                    }
+                }else{
+                    // 处理 http 错误
+                    console.log("服务器连接失败")
+                    showError("服务器连接失败：" + xhr.status)
+                    // 【调试用】如果后端没通，我们可以伪造一个成功信号，方便你写下一个界面
+                    // 实际发布时请删掉下面这行
+                    mockData();
+                }
+            }
+        }
+
+        var requestData = {
+            "departure_city": getCityCode(currentFrom), // 提取 ZUH
+            "arrival_city": getCityCode(currentTo),     // 提取 BJS
+            "departure_date": formatDate(currentDate),
+            "trip_type": "one_way",
+            "seat_class": selectedClass
+        }
+        console.log("发送航班搜索数据：", JSON.stringify(requestData))
+        xhr.send(JSON.stringify(requestData))
+    }
+
+
+    // 【调试用】模拟数据
+    function mockData(){
+        // 稍微改一下逻辑，让返程价格不一样，方便区分
+        var isReturn = (isRoundTrip && activeTab === 1)
+        var basePrice = isReturn ? 1500 : 980
+
+        resultModel.append({ "flight_no": isReturn?"CA8888":"CA1234", "airline": "模拟航空", "plane":"737", "dep_time": "08:00", "arr_time": "11:00", "dep_airport":"T1", "arr_airport":"T2", "price": basePrice })
+        resultModel.append({ "flight_no": isReturn?"CZ9999":"CZ5678", "airline": "模拟航空", "plane":"320", "dep_time": "14:30", "arr_time": "17:30", "dep_airport":"T1", "arr_airport":"T2", "price": basePrice + 200 })
+    }
+
+    // === 【新增】重置所有搜索状态 ===
+    function resetSearchState() {
+        hasSearched = false          // 隐藏 Tab 栏
+        resultModel.clear()          // 清空搜索结果列表
+        firstLegData = null          // 清空已选的去程航班
+        activeTab = 0                // 重置回第一步（去程）
     }
 
     // === 主布局 ===
@@ -64,8 +224,20 @@ FluScrollablePage {
                     Layout.fillWidth: true
                     spacing: 20
 
-                    FluRadioButton { id: radioOneWay; text: "单程"; checked: true }
-                    FluRadioButton { id: radioRoundTrip; text: "往返" }
+                    FluRadioButton {
+                        id: radioOneWay; text: "单程"; checked: true
+                        onClicked: {
+                            root.isRoundTrip = false
+                            resetSearchState()
+                        }
+                    }
+                    FluRadioButton {
+                        id: radioRoundTrip; text: "往返"
+                        onClicked: {
+                            root.isRoundTrip = true
+                            resetSearchState()
+                        }
+                    }
                     Item { Layout.fillWidth: true } // 占位弹簧
 
                     // 舱位选择
@@ -75,6 +247,11 @@ FluScrollablePage {
                         model: ["经济舱", "公务/头等舱"]
                         currentIndex: 0
                         z: 999 // 保证下拉菜单在最上层
+
+                        // 用户手动切换舱位时，重置所有状态
+                        onActivated: {
+                            resetSearchState()
+                        }
                     }
                 }
 
@@ -133,7 +310,10 @@ FluScrollablePage {
                             FluIconButton {
                                 iconSource: FluentIcons.Switch
                                 iconSize: 16
-                                onClicked: swapCities()
+                                onClicked: {
+                                    swapCities()
+                                    resetSearchState()
+                                }
                             }
 
                             // 1.2 目的地
@@ -290,14 +470,234 @@ FluScrollablePage {
                         textColor: "white"
                         font.pixelSize: 18
                         font.bold: true
+
+                        disabled: root.isSearching
                         onClicked: {
-                            console.log("搜索: " + fromCity + " -> " + toCity)
-                            // 这里可以发射信号或调用后端
+                            performSearch()
                         }
                     }
                 }
             }
         }
+
+        // =========================================
+        // 往返进度条 (仿照你提供的截图2)
+        // =========================================
+        Item {
+            id: flightTabs
+
+            // 1. 布局设置：不占满全屏，居中，宽度70%
+            Layout.fillWidth: false
+            Layout.preferredWidth: parent.width * 0.7
+            // Layout.alignment: Qt.AlignHCenter
+
+            // 2. 显示与高度控制
+            Layout.topMargin: visible ? 15 : 0
+            Layout.preferredHeight: visible ? 56 : 0
+            visible: isRoundTrip && hasSearched
+
+            // 3. 统一的阴影背景（放在最底下，这样中间不会有阴影重叠线）
+            FluShadow {
+                anchors.fill: bgRow
+                radius: 10 // 圆角要和下面的 Rectangle 保持一致
+                elevation: 3
+                color: "#33000000"
+            }
+
+            // 4. 内容容器
+            RowLayout {
+                id: bgRow
+                anchors.fill: parent
+                spacing: 0 // 间距设为0，让它们无缝连接
+
+                // =========================================
+                // 左边部分：去程
+                // =========================================
+                Rectangle {
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+
+                    // 设置圆角（四个角都变圆）
+                    radius: 10
+                    color: activeTab === 0 ? "#F0F9FF" : "#FFFFFF"
+
+                    // 【补丁】只盖住右边！
+                    // 作用：把右边的圆角变成直角，以便和右边的块连接
+                    Rectangle {
+                        width: 20
+                        height: parent.height
+                        anchors.right: parent.right // 靠右贴紧
+                        color: parent.color         // 颜色和本体一样
+                    }
+
+                    // --- 内部文字内容 ---
+                    RowLayout {
+                        anchors.centerIn: parent
+                        spacing: 8
+                        Rectangle {
+                            width: 34; height: 20; radius: 4
+                            color: activeTab === 0 ? "#0086F6" : "#F0F0F0"
+                            Text {
+                                anchors.centerIn: parent; text: "去程"; font.pixelSize: 11;
+                                color: activeTab === 0 ? "#FFF" : "#999"
+                            }
+                        }
+                        Text {
+                            // 标题：始终显示当前存储的第一程数据（如果有的话）
+                            text: firstLegData ? (fromCity + "➔" + toCity + " ("+firstLegData.flight_no+")") : (fromCity + " ➔ " + toCity)
+                            font.bold: activeTab === 0
+                            color: activeTab === 0 ? "#0086F6" : "#666"
+                        }
+                    }
+
+                    // 【去程点击逻辑】
+                    MouseArea {
+                        anchors.fill: parent
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: {
+                            if(activeTab !== 0) {
+                                // 仅仅切换视图，不要清空 firstLegData！
+                                activeTab = 0
+                                refreshList()
+                            }
+                        }
+                    }
+                }
+
+                // =========================================
+                // 中间分割线 (可选)
+                // =========================================
+                Rectangle {
+                    Layout.preferredWidth: 1
+                    Layout.preferredHeight: 30
+                    Layout.alignment: Qt.AlignVCenter
+                    color: "#E0E0E0"
+                    z: 1 // 确保线在最上层
+                }
+
+                // =========================================
+                // 右边部分：返程
+                // =========================================
+                Rectangle {
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+
+                    // 设置圆角（四个角都变圆）
+                    radius: 10
+                    // 样式：当前是返程页时高亮
+                    color: activeTab === 1 ? "#F0F9FF" : "#FFFFFF"
+
+                    // 只盖住左边！
+                    // 作用：把左边的圆角变成直角，去接左边的块。
+                    Rectangle {
+                        width: 20
+                        height: parent.height
+                        anchors.left: parent.left   // 靠左贴紧
+                        color: parent.color         // 颜色和本体一样
+                    }
+
+                    // 【核心逻辑】能否点击返程？
+                    // 只要 firstLegData 还在（说明用户选过，或者没清除），就可以点回去！
+                    // 不管 activeTab 现在是 0 还是 1
+                    property bool canSwitchToReturn: firstLegData !== null
+
+                    // --- 内部文字内容 ---
+                    RowLayout {
+                        anchors.centerIn: parent
+                        spacing: 8
+                        // 如果不能点，变半透明
+                        opacity: parent.canSwitchToReturn ? 1 : 0.5
+
+                        Rectangle {
+                            width: 34; height: 20; radius: 4
+                            color: activeTab === 1 ? "#0086F6" : "#F0F0F0"
+                            Text {
+                                anchors.centerIn: parent; text: "返程"; font.pixelSize: 11;
+                                color: activeTab === 1 ? "#FFF" : "#999"
+                            }
+                        }
+                        Text {
+                            text: toCity + " ➔ " + fromCity
+                            font.bold: activeTab === 1
+                            color: activeTab === 1 ? "#0086F6" : "#666"
+                        }
+                    }
+
+                    // 【返程点击逻辑】
+                    MouseArea {
+                        anchors.fill: parent
+                        // 根据是否可选，显示手型或禁止符号
+                        cursorShape: parent.canSwitchToReturn ? Qt.PointingHandCursor : Qt.ForbiddenCursor
+
+                        onClicked: {
+                            // 只有当有去程数据时，才允许切回返程
+                            if(parent.canSwitchToReturn && activeTab !== 1) {
+                                activeTab = 1
+                                refreshList() // 刷新列表，显示返程航班
+                            }
+                        }
+                    }
+
+                }
+            }
+        }
+
+        // =========================================
+        // 搜索结果列表
+        // =========================================
+        ListView {
+            id: resultList
+            Layout.fillWidth: true; Layout.topMargin: flightTabs.visible ? 2 : 10; Layout.preferredHeight: contentHeight
+            interactive: false; model: resultModel; spacing: 8; clip: true
+
+            delegate: Rectangle {
+                width: resultList.width; height: 80; radius: 6
+                color: FluTheme.dark ? Qt.rgba(32/255, 32/255, 32/255, 1) : "#FFFFFF"
+
+                // 【高亮逻辑】
+                property bool isSelectedOutbound: isRoundTrip && (activeTab === 0) && firstLegData && (firstLegData.flight_no === model.flight_no)
+                border.color: isSelectedOutbound ? "#0086F6" : (FluTheme.dark ? "#333" : "#E0e0e0")
+                border.width: isSelectedOutbound ? 2 : 1
+                FluShadow { radius: 6; elevation: 1 }
+
+                RowLayout {
+                    anchors.fill: parent; anchors.margins: 15; spacing: 10
+                    Column {
+                        Layout.preferredWidth: 120
+                        Text { text: model.airline; font.bold: true; color: FluTheme.fontPrimaryColor }
+                        Text { text: model.flight_no + " " + model.plane; font.pixelSize: 12; color: "#999" }
+                    }
+                    Item { Layout.fillWidth: true; Layout.fillHeight: true
+                        RowLayout {
+                            anchors.centerIn: parent; spacing: 20
+                            Text { text: model.dep_time; font.pixelSize: 20; font.bold: true; color: FluTheme.fontPrimaryColor }
+                            Column{ Rectangle{width:40;height:1;color:"#ccc"} Text{text:"直飞";font.pixelSize:10;anchors.horizontalCenter:parent.horizontalCenter;color:"#ccc"} }
+                            Text { text: model.arr_time; font.pixelSize: 20; font.bold: true; color: FluTheme.fontPrimaryColor }
+                        }
+                    }
+                    Column {
+                        Layout.alignment: Qt.AlignRight
+                        Text { text: "¥" + model.price; color: "#FF9500"; font.pixelSize: 20; font.bold: true }
+                        FluFilledButton {
+                            width: 90; height: 30
+                            text: {
+                                if(!isRoundTrip) return "预订"
+                                if(activeTab === 0) return isSelectedOutbound ? "已选" : "选为去程"
+                                return "预订"
+                            }
+                            normalColor: isSelectedOutbound ? "#ccc" : "#FF9500"
+                            disabled: isSelectedOutbound
+                            onClicked: {
+                                var data = { "flight_no": model.flight_no, "price": model.price, "airline": model.airline, "plane": model.plane, "dep_time": model.dep_time, "arr_time": model.arr_time }
+                                handleSelectFlight(data)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        Item { Layout.preferredHeight: 40 }
+
     }
 
     // ==========================================

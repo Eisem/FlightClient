@@ -176,8 +176,6 @@ FluPage {
                 font.bold: true
             }
 
-
-
             Item {
                 width: 250; height: 50
 
@@ -228,11 +226,6 @@ FluPage {
                 }
             }
 
-
-
-
-
-
             // 错误提示文字
             FluText {
                 visible: errorMessage !== ""
@@ -273,8 +266,5 @@ FluPage {
         anchors.bottom: parent.bottom
         anchors.left: parent.left
     }
-
-
-
 
 }

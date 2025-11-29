@@ -30,6 +30,7 @@ qt_add_qml_module(appFlightClient
         figures/logo.png
         figures/loginBackground.png
         QML_FILES
+        QML_FILES
 )
 
 set_target_properties(appFlightClient PROPERTIES
