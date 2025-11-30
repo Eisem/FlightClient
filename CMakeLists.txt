@@ -33,6 +33,8 @@ qt_add_qml_module(appFlightClient
         QML_FILES
         QML_FILES pages/UserCenterPage.qml
         QML_FILES pages/Avatar.qml
+        QML_FILES
+        QML_FILES pages/LoginPage1.qml
 )
 
 set_target_properties(appFlightClient PROPERTIES

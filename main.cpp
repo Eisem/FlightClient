@@ -31,7 +31,7 @@ int main(int argc, char *argv[])
 
     // 3. 读取配置 (如果没有文件，使用第二个参数作为默认值)
     // 假设你的 ini 文件结构是 [Network] ip=...
-    QString serverIp = settings.value("Network/ip", "127.0.2.1").toString();
+    QString serverIp = settings.value("Network/ip", "127.0.0.1").toString();
     QString serverPort = settings.value("Network/port", "8080").toString();
 
     // 拼接完整的基础 URL，方便 QML 直接使用

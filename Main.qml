@@ -92,7 +92,7 @@ FluWindow {
     }
 
     function gotoLoginPage() {
-        pageLoader.source = "pages/LoginPage.qml"
+        pageLoader.source = "pages/LoginPage1.qml"
     }
 
     function gotoUserCenterPage() {

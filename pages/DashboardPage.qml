@@ -149,7 +149,7 @@ FluPage {
         // 页面加载完成后，默认选中第一项
         Component.onCompleted: {
             nav_view.setCurrentIndex(0)
-            nav_view.push("FlightSearch.qml")
+            // nav_view.push("FlightSearch.qml")
         }
     }
 }
