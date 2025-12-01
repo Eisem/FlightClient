@@ -1,7 +1,6 @@
 import QtQuick
 import FluentUI
 import Qt5Compat.GraphicalEffects
-
 Item {
     id: control
     property int size: 60
@@ -27,4 +26,6 @@ Item {
         source: control.source
         fillMode: Image.PreserveAspectCrop
     }
+
+
 }

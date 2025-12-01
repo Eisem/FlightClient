@@ -6,6 +6,7 @@ import FlightClient
 import QtQuick.Layouts
 import QtQuick.Effects
 import FluentUI.Controls
+import Qt5Compat.GraphicalEffects
 
 FluPage {
     id: usercenterpage
@@ -26,8 +27,81 @@ FluPage {
     property string userPhone: "181 2290 3031"
     property string avatarSource: "qrc:/qt/qml/FlightClient/figures/123.jpg" // 替换为你的默认头像路径
 
+    // --- 新增：用于控制弹窗逻辑的临时变量 ---
+    property string currentEditType: ""
+
     // 防止超出屏幕的部分挡住其他窗口
     clip: false
+    FluContentDialog {
+            id: editDialog
+            title: "修改信息"
+            message: "请输入新的内容"
+            buttonFlags: FluContentDialogType.NegativeButton | FluContentDialogType.PositiveButton
+            negativeText: "取消"
+            positiveText: "保存"
+
+            // 弹窗里的内容区域
+            contentDelegate: Item {
+                implicitWidth: parent.width
+                implicitHeight: 60
+                FluTextBox {
+                    id: inputField
+                    anchors.centerIn: parent
+                    width: parent.width
+                    placeholderText: "请输入..."
+                    // 当弹窗打开时，自动填入旧数据
+                    Component.onCompleted: {
+                        inputField.text = getInitialText()
+                        inputField.forceActiveFocus()
+                    }
+                }
+
+                // 辅助函数：根据 currentEditType 获取当前值
+                function getInitialText() {
+                    if (currentEditType === "name") return usercenterpage.userName
+                    if (currentEditType === "phone") return usercenterpage.userPhone
+                    if (currentEditType === "email") return usercenterpage.userEmail
+                    return ""
+                }
+            }
+
+            // 点击“保存”按钮后的逻辑
+            onPositiveClicked: {
+                // 获取输入框的内容 (这里通过查找子对象的方式，或者你可以把 Input 定义在外面绑定)
+                // 为了简单演示，假设我们能获取到 inputField 的 text，或者绑定一个 property
+                // 在实际项目中，建议在 contentDelegate 外部定义一个 property string tempInput 来双向绑定
+
+                // 这里仅做演示逻辑分支：
+                var newVal = "新输入的值" // 实际开发需绑定 Text 输入
+
+                if (currentEditType === "name") {
+                    console.log("正在保存名字...")
+                    // usercenterpage.userName = newVal
+                } else if (currentEditType === "phone") {
+                    console.log("正在保存电话...")
+                }
+
+                showSuccess("保存成功 (模拟)")
+            }
+        }
+
+        // -------------------------------------------------
+        // 新增：针对日期的特殊弹窗 (示例)
+        // -------------------------------------------------
+        FluContentDialog {
+            id: dateDialog
+            title: "选择生日"
+            message: "请选择您的出生日期"
+            negativeText: "取消"
+            positiveText: "确定"
+            contentDelegate: FluCalendarPicker {
+                // 这里放置日历组件
+            }
+            onPositiveClicked: {
+                console.log("生日已修改")
+            }
+        }
+
     // 返回按钮 (保留你原有的代码)
     FluIconButton {
         iconSource: FluentIcons.ChromeBack
@@ -63,16 +137,17 @@ FluPage {
             // -------------------------------------------------
             Avatar {
                 id: avatar1
-                size: 130
+                size: 110
                 source: usercenterpage.avatarSource
                 anchors.horizontalCenter: parent.horizontalCenter
             }
             RoundButton{
+                id:rbutton
                 radius: width/2
                 anchors.right: avatar1.right
                 anchors.bottom: avatar1.bottom
                 background: FluIcon{
-                    iconSource: FluentIcons.EditMirrored
+                    iconSource: FluentIcons.Edit
                     color: rgba(1,1,1)
 
                 }
@@ -80,6 +155,7 @@ FluPage {
                     console.log("tap tap")
                 }
             }
+
 
 
 
@@ -114,6 +190,12 @@ FluPage {
                         title: "姓名"
                         value: usercenterpage.userName
                         showBottomLine: true
+                        onClicked: {
+                            usercenterpage.currentEditType = "name"
+                            editDialog.title = "修改姓名"
+                            editDialog.open()
+                        }
+
                     }
 
                     // 生日
@@ -122,6 +204,9 @@ FluPage {
                         title: "生日"
                         value: usercenterpage.userBirthday
                         showBottomLine: true
+                        onClicked: {
+                            dateDialog.open()
+                        }
                     }
 
                     // 性别
@@ -130,6 +215,9 @@ FluPage {
                         title: "性别"
                         value: usercenterpage.userGender
                         showBottomLine: false
+                        onClicked: {
+                            showInfo("性别通常在实名认证后不可修改")
+                        }
                     }
                 }
             }
@@ -166,6 +254,11 @@ FluPage {
                         title: "电子邮件"
                         value: usercenterpage.userEmail
                         showBottomLine: true
+                        onClicked: {
+                            usercenterpage.currentEditType = "email"
+                            editDialog.title = "绑定新邮箱"
+                            editDialog.open()
+                        }
                     }
 
                     // 电话
@@ -174,6 +267,11 @@ FluPage {
                         title: "电话"
                         value: usercenterpage.userPhone
                         showBottomLine: false
+                        onClicked: {
+                            usercenterpage.currentEditType = "phone"
+                            editDialog.title = "修改手机号"
+                            editDialog.open()
+                        }
                     }
                 }
             }
@@ -184,6 +282,7 @@ FluPage {
     // 内部组件：信息行 (InfoRow)
     // -------------------------------------------------
     component InfoRow : Item {
+        id:currentrow
         property int icon
         property string title
         property string value
@@ -191,6 +290,8 @@ FluPage {
 
         Layout.fillWidth: true
         height: Math.max(60, contentRow.height + 20)
+
+        signal clicked()
 
         RowLayout {
             id: contentRow
@@ -254,8 +355,8 @@ FluPage {
             onClicked: {
                 // 这里可以添加点击某一行的逻辑，比如弹出修改框
                 console.log("Clicked row: " + title)
+                currentrow.clicked()
             }
-
             // 简单的按压效果
             onPressed: parent.opacity = 0.7
             onReleased: parent.opacity = 1.0
