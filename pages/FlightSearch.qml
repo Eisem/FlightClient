@@ -12,12 +12,53 @@ FluScrollablePage {
     // --- 0. 模拟城市数据模型 ---
     ListModel {
         id: cityModel
-        ListElement { name: "珠海(ZUH)"; code: "ZUH" }
+
         ListElement { name: "北京(BJS)"; code: "BJS" }
         ListElement { name: "上海(SHA)"; code: "SHA" }
         ListElement { name: "广州(CAN)"; code: "CAN" }
         ListElement { name: "深圳(SZX)"; code: "SZX" }
+        ListElement { name: "珠海(ZUH)"; code: "ZUH" }
         ListElement { name: "成都(CTU)"; code: "CTU" }
+        ListElement { name: "杭州(HGH)"; code: "HGH" }
+        ListElement { name: "昆明(KMG)"; code: "KMG" }
+        ListElement { name: "西安(XIY)"; code: "XIY" }
+        ListElement { name: "重庆(CKG)"; code: "CKG" }
+        ListElement { name: "武汉(WUH)"; code: "WUH" }
+        ListElement { name: "南京(NKG)"; code: "NKG" }
+        ListElement { name: "厦门(XMN)"; code: "XMN" }
+        ListElement { name: "长沙(CSX)"; code: "CSX" }
+        ListElement { name: "海口(HAK)"; code: "HAK" }
+        ListElement { name: "三亚(SYX)"; code: "SYX" }
+        ListElement { name: "青岛(TAO)"; code: "TAO" }
+        ListElement { name: "大连(DLC)"; code: "DLC" }
+        ListElement { name: "天津(TSN)"; code: "TSN" }
+        ListElement { name: "郑州(CGO)"; code: "CGO" }
+        ListElement { name: "沈阳(SHE)"; code: "SHE" }
+        ListElement { name: "哈尔滨(HRB)"; code: "HRB" }
+        ListElement { name: "乌鲁木齐(URC)"; code: "URC" }
+        ListElement { name: "贵阳(KWE)"; code: "KWE" }
+        ListElement { name: "南宁(NNG)"; code: "NNG" }
+        ListElement { name: "福州(FOC)"; code: "FOC" }
+        ListElement { name: "兰州(LHW)"; code: "LHW" }
+        ListElement { name: "太原(TYN)"; code: "TYN" }
+        ListElement { name: "长春(CGQ)"; code: "CGQ" }
+        ListElement { name: "南昌(KHN)"; code: "KHN" }
+        ListElement { name: "呼和浩特(HET)"; code: "HET" }
+        ListElement { name: "宁波(NGB)"; code: "NGB" }
+        ListElement { name: "温州(WNZ)"; code: "WNZ" }
+        ListElement { name: "合肥(HFE)"; code: "HFE" }
+        ListElement { name: "济南(TNA)"; code: "TNA" }
+        ListElement { name: "石家庄(SJW)"; code: "SJW" }
+        ListElement { name: "银川(INC)"; code: "INC" }
+        ListElement { name: "西宁(XNN)"; code: "XNN" }
+        ListElement { name: "拉萨(LXA)"; code: "LXA" }
+        ListElement { name: "丽江(LJG)"; code: "LJG" }
+        ListElement { name: "西双版纳(JHG)"; code: "JHG" }
+        ListElement { name: "桂林(KWL)"; code: "KWL" }
+        ListElement { name: "烟台(YNT)"; code: "YNT" }
+        ListElement { name: "泉州(JJN)"; code: "JJN" }
+        ListElement { name: "无锡(WUX)"; code: "WUX" }
+        ListElement { name: "洛阳(LYA)"; code: "LYA" }
     }
 
     // === 内部状态 ===
@@ -61,8 +102,8 @@ FluScrollablePage {
     function handleSelectFlight(flightData){
         // 1. 单程模式：直接下单
         if (!isRoundTrip) {
-            console.log("单程下单：", flightData.flight_no)
-            showSuccess("已选择航班: " + flightData.flight_no)
+            console.log("单程下单：", flightData.flight_number)
+            showSuccess("已选择航班: " + flightData.flight_number)
             // root.searchFlightSuccess([flightData])
             return
         }
@@ -71,7 +112,7 @@ FluScrollablePage {
         if (activeTab === 0) {
             // --- 当前在选去程 ---
             firstLegData = flightData // 【保留】存入 firstLegData
-            showSuccess("去程已选 " + flightData.flight_no + "，正在查询返程...")
+            showSuccess("去程已选 " + flightData.flight_number + "，正在查询返程...")
             // 切换到返程视图
             activeTab = 1
             // 刷新列表查返程
@@ -84,7 +125,7 @@ FluScrollablePage {
                 refreshList()
                 return
             }
-            console.log("往返下单: 去程" + firstLegData.flight_no + " + 返程" + flightData.flight_no)
+            console.log("往返下单: 去程" + firstLegData.flight_number + " + 返程" + flightData.flight_number)
             showSuccess("往返行程已确认！")
             // root.searchFlightSuccess([firstLegData, flightData])
         }
@@ -138,30 +179,39 @@ FluScrollablePage {
         xhr.setRequestHeader("Content-Type", "application/json")
         xhr.onreadystatechange = function(){
             if(xhr.readyState === XMLHttpRequest.DONE){
-                isSearching = false // 搜索完成， 解锁状态
+                isSearching = false
                 if(xhr.status === 200){
                     try {
                         var response = JSON.parse(xhr.responseText)
                         if(response.status === "success"){
                             var list = response.data || []
                             if(list.length === 0) showInfo("未找到航班")
+
                             for(var i = 0; i < list.length; i ++){
-                                resultModel.append(list[i])
+                                var item = list[i];
+                                resultModel.append({
+                                    "flight_number": item.flight_number,
+                                    "airline": item.airline,
+                                    "aircraft_model": item.aircraft_model,
+                                    "departure_time": item.departure_time,
+                                    "landing_time": item.landing_time,
+                                    "dep_airport": getCityCode(currentFrom) + "机场",
+                                    "arr_airport": getCityCode(currentTo) + "机场",
+                                    "price": item.price,
+                                    "flight_id": item.id
+                                })
                             }
                         } else {
-                            showerror(response.message || "查询失败")
+                            showError(response.message || "查询失败")
                         }
                     } catch(e){
-                        console.log("Json解析失败")
+                        console.log("Json解析失败", e) // 打印错误详情
                         showError("数据解析失败")
                     }
                 }else{
-                    // 处理 http 错误
                     console.log("服务器连接失败")
                     showError("服务器连接失败：" + xhr.status)
-                    // 【调试用】如果后端没通，我们可以伪造一个成功信号，方便你写下一个界面
-                    // 实际发布时请删掉下面这行
-                    mockData();
+                    // mockData(); // 调试时保留，正式连后端时建议注释掉以免混淆
                 }
             }
         }
@@ -170,7 +220,6 @@ FluScrollablePage {
             "departure_city": getCityCode(currentFrom), // 提取 ZUH
             "arrival_city": getCityCode(currentTo),     // 提取 BJS
             "departure_date": formatDate(currentDate),
-            "trip_type": "one_way",
             "seat_class": selectedClass
         }
         console.log("发送航班搜索数据：", JSON.stringify(requestData))
@@ -184,8 +233,8 @@ FluScrollablePage {
         var isReturn = (isRoundTrip && activeTab === 1)
         var basePrice = isReturn ? 1500 : 980
 
-        resultModel.append({ "flight_no": isReturn?"CA8888":"CA1234", "airline": "模拟航空", "plane":"737", "dep_time": "08:00", "arr_time": "11:00", "dep_airport":"T1", "arr_airport":"T2", "price": basePrice })
-        resultModel.append({ "flight_no": isReturn?"CZ9999":"CZ5678", "airline": "模拟航空", "plane":"320", "dep_time": "14:30", "arr_time": "17:30", "dep_airport":"T1", "arr_airport":"T2", "price": basePrice + 200 })
+        resultModel.append({ "flight_number": isReturn?"CA8888":"CA1234", "airline": "模拟航空", "aircraft_model":"737", "departure_time": "08:00", "landing_time": "11:00", "dep_airport":"T1", "arr_airport":"T2", "price": basePrice })
+        resultModel.append({ "flight_number": isReturn?"CZ9999":"CZ5678", "airline": "模拟航空", "aircraft_model":"320", "departure_time": "14:30", "landing_time": "17:30", "dep_airport":"T1", "arr_airport":"T2", "price": basePrice + 200 })
     }
 
     // === 【新增】重置所有搜索状态 ===
@@ -398,6 +447,8 @@ FluScrollablePage {
                                     onAccepted: {
                                         root.departureDate = current
                                         // FluCalendarPicker 选完日期后会自动关闭弹窗
+                                        // 改了日期，重置搜索状态
+                                        resetSearchState()
                                     }
                                 }
                             }
@@ -447,6 +498,8 @@ FluScrollablePage {
                                             return
                                         }
                                         root.returnDate = current
+                                        // 【新增】改了日期，重置搜索状态
+                                        resetSearchState()
                                     }
                                 }
 
@@ -544,7 +597,7 @@ FluScrollablePage {
                         }
                         Text {
                             // 标题：始终显示当前存储的第一程数据（如果有的话）
-                            text: firstLegData ? (fromCity + "➔" + toCity + " ("+firstLegData.flight_no+")") : (fromCity + " ➔ " + toCity)
+                            text: firstLegData ? (fromCity + "➔" + toCity + " ("+firstLegData.flight_number+")") : (fromCity + " ➔ " + toCity)
                             font.bold: activeTab === 0
                             color: activeTab === 0 ? "#0086F6" : "#666"
                         }
@@ -655,7 +708,7 @@ FluScrollablePage {
                 color: FluTheme.dark ? Qt.rgba(32/255, 32/255, 32/255, 1) : "#FFFFFF"
 
                 // 【高亮逻辑】
-                property bool isSelectedOutbound: isRoundTrip && (activeTab === 0) && firstLegData && (firstLegData.flight_no === model.flight_no)
+                property bool isSelectedOutbound: isRoundTrip && (activeTab === 0) && firstLegData && (firstLegData.flight_number === model.flight_number)
                 border.color: isSelectedOutbound ? "#0086F6" : (FluTheme.dark ? "#333" : "#E0e0e0")
                 border.width: isSelectedOutbound ? 2 : 1
                 FluShadow { radius: 6; elevation: 1 }
@@ -665,14 +718,14 @@ FluScrollablePage {
                     Column {
                         Layout.preferredWidth: 120
                         Text { text: model.airline; font.bold: true; color: FluTheme.fontPrimaryColor }
-                        Text { text: model.flight_no + " " + model.plane; font.pixelSize: 12; color: "#999" }
+                        Text { text: model.flight_number + " " + model.aircraft_model; font.pixelSize: 12; color: "#999" }
                     }
                     Item { Layout.fillWidth: true; Layout.fillHeight: true
                         RowLayout {
                             anchors.centerIn: parent; spacing: 20
-                            Text { text: model.dep_time; font.pixelSize: 20; font.bold: true; color: FluTheme.fontPrimaryColor }
+                            Text { text: model.departure_time; font.pixelSize: 20; font.bold: true; color: FluTheme.fontPrimaryColor }
                             Column{ Rectangle{width:40;height:1;color:"#ccc"} Text{text:"直飞";font.pixelSize:10;anchors.horizontalCenter:parent.horizontalCenter;color:"#ccc"} }
-                            Text { text: model.arr_time; font.pixelSize: 20; font.bold: true; color: FluTheme.fontPrimaryColor }
+                            Text { text: model.landing_time; font.pixelSize: 20; font.bold: true; color: FluTheme.fontPrimaryColor }
                         }
                     }
                     Column {
@@ -688,7 +741,7 @@ FluScrollablePage {
                             normalColor: isSelectedOutbound ? "#ccc" : "#FF9500"
                             disabled: isSelectedOutbound
                             onClicked: {
-                                var data = { "flight_no": model.flight_no, "price": model.price, "airline": model.airline, "plane": model.plane, "dep_time": model.dep_time, "arr_time": model.arr_time }
+                                var data = { "flight_number": model.flight_number, "price": model.price, "airline": model.airline, "aircraft_model": model.aircraft_model, "departure_time": model.departure_time, "landing_time": model.landing_time }
                                 handleSelectFlight(data)
                             }
                         }
@@ -775,6 +828,8 @@ FluScrollablePage {
                                 root.toCity = model.name
                             }
                             cityPopup.close()
+                            // 选完城市后，重置搜索状态
+                            resetSearchState()
                         }
                     }
 

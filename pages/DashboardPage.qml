@@ -46,7 +46,7 @@ FluPage {
             }
 
             Text {
-                text: "long哥航班查询"
+                text: "维哥航班查询"
                 font.pixelSize: 16
                 font.bold: true
                 color: "#333333"
@@ -58,12 +58,10 @@ FluPage {
             Item{
                 width: 32
                 height:32
-                Image {
-                    // 你的头像路径
-                    source: "qrc:/qt/qml/FlightClient/figures/123.jpg"
-                    width: 32
-                    height: 32
-                    fillMode: Image.PreserveAspectFit
+                Avatar {
+                    anchors.centerIn: parent // 居中显示
+                    size: 32                 // 设置大小
+                    source: "qrc:/qt/qml/FlightClient/figures/123.jpg" // 设置图片源
                 }
 
                 FluButton{

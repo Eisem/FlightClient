@@ -135,11 +135,21 @@ FluPage {
             // -------------------------------------------------
             // 1. 顶部头像区域
             // -------------------------------------------------
-            Avatar {
+            BurstAvatar {
                 id: avatar1
-                size: 110
+
+                // 1. 设置大小 (对应原本的 size: 110)
+                avatarSize: 110
+
+                // 2. 传入图片路径 (实现可修改、可复用)
+                // 这里绑定的是你 UserCenterPage.qml 顶部的 property string avatarSource
                 source: usercenterpage.avatarSource
+
+                // 3. 布局属性
                 anchors.horizontalCenter: parent.horizontalCenter
+
+                // (可选) 如果想调整小球弹出的距离，可以修改这里
+                // burstDistance: 100
             }
             RoundButton{
                 id:rbutton
