@@ -89,9 +89,9 @@ Item {
                 // [优化 1] 关闭 layer 渲染。
                 // 之前的 layer.samples: 8 会导致每一帧都重绘高清纹理，造成严重的性能卡顿。
                 // 现代 QtQuick Shape 自带抗锯齿，通常不需要开启 layer。
-                // layer.enabled: true
-                // layer.samples: 8
-                // layer.smooth: true
+                layer.enabled: true
+                layer.samples: 8
+                layer.smooth: true
                 antialiasing: true
 
                 readonly property real r: (root.avatarSize / 2) + root.gap + (root.ringWidth / 2)

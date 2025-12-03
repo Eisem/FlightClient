@@ -401,7 +401,7 @@ FluPage {
             Rectangle {
                 Layout.fillWidth: true
                 height: basicInfoCol.height + 20
-                radius: 8
+                radius: 15
                 color: FluTheme.dark ? Qt.rgba(255,255,255,0.05) : "white"
                 border.color: FluTheme.dividerColor
                 border.width: 1
@@ -465,7 +465,7 @@ FluPage {
             Rectangle {
                 Layout.fillWidth: true
                 height: contactInfoCol.height + 20
-                radius: 8
+                radius: 15
                 color: FluTheme.dark ? Qt.rgba(255,255,255,0.05) : "white"
                 border.color: FluTheme.dividerColor
                 border.width: 1
@@ -518,7 +518,7 @@ FluPage {
                 Layout.fillWidth: true
                 // 高度根据内容自动适应
                 height: realNameCol.height + 20
-                radius: 8
+                radius: 15
                 color: FluTheme.dark ? Qt.rgba(255,255,255,0.05) : "white"
                 border.color: FluTheme.dividerColor
                 border.width: 1

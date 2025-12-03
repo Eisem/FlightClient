@@ -21,6 +21,7 @@ FluPage {
         if(!useBackend.checked){
             console.log("前端本地登录")
             loginPage.loginSuccessSignal()
+            appWindow.currentUid = "123"
             return;
         }
         console.log("尝试连接后端登录")
