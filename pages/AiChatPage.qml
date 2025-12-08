@@ -123,8 +123,8 @@ FluPage {
                     try {
                         var response = JSON.parse(xhr.responseText)
                         // 假设后端返回 { "status": "success", "reply": "AI的回复内容..." }
-                        if (response.status === "success" && response.reply) {
-                            appendMessage(type_AI, response.reply)
+                        if (response.status === "success" && response.data.chat) {
+                            appendMessage(type_AI, response.data.chat)
                         } else {
                             appendMessage(type_AI, "抱歉，我现在有点糊涂了。(后端格式错误)")
                         }
@@ -141,7 +141,6 @@ FluPage {
 
         // 3. 构建发送数据 (UID 单独放在 Body 中)
         var data = {
-            "uid": appWindow.currentUid, // 单独发送 UID
             "message": msg               // 聊天内容
         }
 
