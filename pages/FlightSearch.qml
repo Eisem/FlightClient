@@ -210,8 +210,8 @@ FluScrollablePage {
                     }
                 }else{
                     console.log("服务器连接失败")
-                    showError("服务器连接失败：" + xhr.status)
-                    // mockData(); // 调试时保留，正式连后端时建议注释掉以免混淆
+                    // showError("服务器连接失败：" + xhr.status)
+                    mockData(); // 调试时保留，正式连后端时建议注释掉以免混淆
                 }
             }
         }

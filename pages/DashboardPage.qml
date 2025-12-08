@@ -126,6 +126,24 @@ FluPage {
                 }
             }
 
+            FluPaneItem {
+                title: "历史记录"
+                icon: FluentIcons.ShoppingCart
+                url: "qrc:/qt/qml/FlightClient/pages/HistoryPage.qml"
+                onTap: {
+                    nav_view.push(url)
+                }
+            }
+
+            FluPaneItem {
+                title: "AI"
+                icon: FluentIcons.ShoppingCart
+                url: "qrc:/qt/qml/FlightClient/pages/AiChatPage.qml"
+                onTap: {
+                    nav_view.push(url)
+                }
+            }
+
 
         }
 

@@ -36,6 +36,9 @@ qt_add_qml_module(appFlightClient
         QML_FILES
         QML_FILES pages/LoginPage1.qml
         QML_FILES pages/BurstAvatar.qml
+        QML_FILES pages/HomePage.qml
+        QML_FILES pages/HistoryPage.qml
+        QML_FILES pages/AiChatPage.qml
 )
 
 set_target_properties(appFlightClient PROPERTIES
