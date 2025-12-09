@@ -102,20 +102,24 @@ FluScrollablePage {
     function handleSelectFlight(flightData){
         // 1. 单程模式：直接下单
         if (!isRoundTrip) {
-            console.log("单程下单：", flightData.flight_number)
-            showSuccess("已选择航班: " + flightData.flight_number)
-            // root.searchFlightSuccess([flightData])
+            // 【修改】单程传参：只传 outboundFlight (去程)
+            nav_view.push("qrc:/qt/qml/FlightClient/pages/BookingPage.qml", {
+                "isRoundTrip": false,
+                "outboundFlight": flightData, // 把单程数据作为去程
+                "inboundFlight": null,        // 返程为空
+                "totalPrice": flightData.price // 总价就是单程价
+            })
             return
         }
 
         // 2. 往返模式
         if (activeTab === 0) {
             // --- 当前在选去程 ---
-            firstLegData = flightData // 【保留】存入 firstLegData
+            firstLegData = flightData // 暂存去程数据
             showSuccess("去程已选 " + flightData.flight_number + "，正在查询返程...")
+
             // 切换到返程视图
             activeTab = 1
-            // 刷新列表查返程
             refreshList()
         } else {
             // --- 当前在选返程 (最终下单) ---
@@ -125,9 +129,16 @@ FluScrollablePage {
                 refreshList()
                 return
             }
-            console.log("往返下单: 去程" + firstLegData.flight_number + " + 返程" + flightData.flight_number)
-            showSuccess("往返行程已确认！")
-            // root.searchFlightSuccess([firstLegData, flightData])
+
+            // 【修改】往返传参：同时传递 去程(firstLegData) 和 返程(flightData)
+            var sumPrice = firstLegData.price + flightData.price
+
+            nav_view.push("qrc:/qt/qml/FlightClient/pages/BookingPage.qml", {
+                "isRoundTrip": true,
+                "outboundFlight": firstLegData, // 去程数据
+                "inboundFlight": flightData,    // 返程数据
+                "totalPrice": sumPrice          // 总价
+            })
         }
     }
 
@@ -195,8 +206,8 @@ FluScrollablePage {
                                     "aircraft_model": item.aircraft_model,
                                     "departure_time": item.departure_time,
                                     "landing_time": item.landing_time,
-                                    "dep_airport": getCityCode(currentFrom) + "机场",
-                                    "arr_airport": getCityCode(currentTo) + "机场",
+                                    "dep_airport": currentFrom + "机场",
+                                    "arr_airport": currentTo + "机场",
                                     "price": item.price,
                                     "flight_id": item.id
                                 })
@@ -227,14 +238,49 @@ FluScrollablePage {
     }
 
 
-    // 【调试用】模拟数据
+    // 【调试用】模拟数据 (已修正逻辑)
     function mockData(){
-        // 稍微改一下逻辑，让返程价格不一样，方便区分
+        // 1. 判断是去程还是返程
+        // activeTab === 0 : 去程 (from -> to)
+        // activeTab === 1 : 返程 (to -> from)
         var isReturn = (isRoundTrip && activeTab === 1)
+
+        // 2. 动态决定起降地名称
+        // 注意：这里直接用前端变量 "珠海(ZUH)"，这样 BookingPage 就能解析出 "珠海"
+        var currentDep = (activeTab === 0) ? fromCity : toCity
+        var currentArr = (activeTab === 0) ? toCity : fromCity
+
         var basePrice = isReturn ? 1500 : 980
 
-        resultModel.append({ "flight_number": isReturn?"CA8888":"CA1234", "airline": "模拟航空", "aircraft_model":"737", "departure_time": "08:00", "landing_time": "11:00", "dep_airport":"T1", "arr_airport":"T2", "price": basePrice })
-        resultModel.append({ "flight_number": isReturn?"CZ9999":"CZ5678", "airline": "模拟航空", "aircraft_model":"320", "departure_time": "14:30", "landing_time": "17:30", "dep_airport":"T1", "arr_airport":"T2", "price": basePrice + 200 })
+        // 3. 模拟第一条数据
+        resultModel.append({
+            "flight_number": isReturn ? "CA8888" : "CA1234",
+            "airline": "模拟航空",
+            "aircraft_model": "波音737",
+            "departure_time": "08:00",
+            "landing_time": "11:00",
+
+            "dep_airport": currentDep,
+            "arr_airport": currentArr,
+
+            "price": basePrice,
+            "flight_id": 1001
+        })
+
+        // 4. 模拟第二条数据
+        resultModel.append({
+            "flight_number": isReturn ? "CZ9999" : "CZ5678",
+            "airline": "测试航空",
+            "aircraft_model": "空客320",
+            "departure_time": "14:30",
+            "landing_time": "17:30",
+
+            "dep_airport": currentDep,
+            "arr_airport": currentArr,
+
+            "price": basePrice + 200,
+            "flight_id": 1002
+        })
     }
 
     // === 【新增】重置所有搜索状态 ===
@@ -741,7 +787,20 @@ FluScrollablePage {
                             normalColor: isSelectedOutbound ? "#ccc" : "#FF9500"
                             disabled: isSelectedOutbound
                             onClicked: {
-                                var data = { "flight_number": model.flight_number, "price": model.price, "airline": model.airline, "aircraft_model": model.aircraft_model, "departure_time": model.departure_time, "landing_time": model.landing_time }
+                                var data = {
+                                    "flight_number": model.flight_number,
+                                    "price": model.price,
+                                    "airline": model.airline,
+                                    "aircraft_model": model.aircraft_model,
+                                    "departure_time": model.departure_time,
+                                    "landing_time": model.landing_time,
+                                    "dep_airport": model.dep_airport,
+                                    "arr_airport": model.arr_airport,
+                                    "departure_date": formatDate(departureDate),
+                                    "flight_id": model.flight_id
+                                }
+                                // 把当前选中的舱位传进去
+                                data.seatClass = root.selectedClass
                                 handleSelectFlight(data)
                             }
                         }

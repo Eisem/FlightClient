@@ -39,6 +39,7 @@ qt_add_qml_module(appFlightClient
         QML_FILES pages/HomePage.qml
         QML_FILES pages/HistoryPage.qml
         QML_FILES pages/AiChatPage.qml
+        QML_FILES pages/BookingPage.qml
 )
 
 set_target_properties(appFlightClient PROPERTIES
