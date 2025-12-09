@@ -67,7 +67,7 @@ FluPage {
                         // 【修改点3】根据后端 C++ 的结构修改字段获取方式
                         // 后端返回的是: { "status": "success", "user": { "id": 1, ... } }
                         if(response.status === "success" && response.user && response.user.id){
-                            appWindow.currentUid = response.user.id // 是 user.id 不是 data.uid
+                            appWindow.currentUid = response.user.             id // 是 user.id 不是 data.uid
                             showSuccess("登录成功")
                             loginPage.loginSuccessSignal()
                         } else {
