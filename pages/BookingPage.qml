@@ -31,23 +31,22 @@ FluPage {
         showLoading("正在创建订单...");
 
         // 临时变量存储生成的ID
-        var outId = -1;
-        var inId = -1;
+        var outId = "";
+        var inId = "";
 
         // 2. 链式调用：先创建去程，成功后再创建返程
         createOrderStep(outboundFlight, function(id1) {
-            outId = id1; // 拿到去程ID
-
+            outId = id1.toString(); // 拿到去程ID
             if (isRoundTrip && inboundFlight) {
                 // 如果是往返，继续创建返程
                 createOrderStep(inboundFlight, function(id2) {
-                    inId = id2; // 拿到返程ID
+                    inId = id2.toString(); // 拿到返程ID
                     // 两单都成功，触发跳转逻辑
                     handleJump(outId, inId);
                 });
             } else {
                 // 如果是单程，直接触发跳转逻辑
-                handleJump(outId, -1);
+                handleJump(outId, "");
             }
         });
     }
@@ -59,7 +58,7 @@ FluPage {
 
         // 使用定时器缓冲一下，让 loading 动画自然结束
         delayTimer.callback = function() {
-            PayDialog.showpay(outId, inId, root.totalPrice);
+            payPopup.showPay(outId, inId, root.totalPrice);
         }
         delayTimer.start();
     }
@@ -84,7 +83,7 @@ FluPage {
             "user_id": parseInt(appWindow.currentUid),
             "flight_id": flightData.flight_id || 0,
             "seat_type": mapSeatType(currentSeatClass),
-            "seat_number": generateSeatNumber(), // 随机分配一个座位
+            "seat_number": generateSeatNumber(),
             "status": "未支付"
         }
 
@@ -142,7 +141,6 @@ FluPage {
     // --- 辅助工具函数 ---
     function mapSeatType(clsName) {
         if (clsName === "公务/头等舱") return 1;
-        // if (clsName === "头等舱") return 2;
         return 0; // 经济舱
     }
 
@@ -186,11 +184,27 @@ FluPage {
         anchors.fill: parent; anchors.bottomMargin: 80
         contentHeight: contentCol.height + 40; clip: true
 
+        FluIconButton{
+            iconSource: FluentIcons.ChromeBack
+            iconSize: 15
+            text:"返回主页" // 鼠标悬停时显示
+
+            // 定位到左上角
+            anchors.left: parent.left
+            anchors.top: parent.top
+            anchors.topMargin: 5
+            anchors.leftMargin: 8
+
+            onClicked: {
+                nav_view.push("qrc:/qt/qml/FlightClient/pages/FlightSearch.qml")
+            }
+        }
+
         ColumnLayout {
             id: contentCol
             width: parent.width; anchors.horizontalCenter: parent.horizontalCenter
             Layout.maximumWidth: 800; spacing: 15
-            Item { Layout.preferredHeight: 10 }
+            Item { Layout.preferredHeight: 20 }
 
             // 信息卡片
             Rectangle {
@@ -216,7 +230,7 @@ FluPage {
                     RowLayout {
                         spacing: 15
                         Text { text: "乘机人"; color: "#666"; font.pixelSize: 14 }
-                        Text { text: "UID: " + (appWindow.currentUid || "未登录"); color: "#333"; font.pixelSize: 14 }
+                        Text { text: "UID: " + (appWindow.currentUid || "未登录"); color: "#999"; font.pixelSize: 14 }
                     }
                 }
             }

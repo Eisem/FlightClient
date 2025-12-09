@@ -11,6 +11,15 @@ FluPage {
     property int currentFilterIndex: 0
     property int nextFilterIndex: 0
 
+    PayDialog {
+        id: payDialog
+        // 当支付成功信号触发时，刷新订单列表
+        onPaymentSuccess: {
+            console.log("支付成功，正在刷新订单列表...")
+            ordersPage.fetchOrders() // 重新拉取数据，状态会变为“已支付”
+        }
+    }
+
     // === 2. 核心动画逻辑 (保留原逻辑) ===
     SequentialAnimation {
         id: refreshAnim
@@ -132,19 +141,9 @@ FluPage {
                 height: isMatch ? 170 : 0 // 稍微增加高度以容纳日期
                 visible: isMatch
 
-                PayDialog {
-                    id: payDialog
-                    // 当支付成功信号触发时，刷新订单列表
-                    onPaymentSuccess: {
-                        console.log("支付成功，正在刷新订单列表...")
-                        ordersPage.fetchOrders() // 重新拉取数据，状态会变为“已支付”
-                    }
-                }
-
-
-
                 // === 卡片本体 ===
                 Rectangle {
+                    id: cardBg
                     anchors.fill: parent
                     anchors.bottomMargin: 10
                     visible: parent.visible
@@ -243,7 +242,7 @@ FluPage {
                                     anchors.centerIn: parent
                                     rotation: 0 // 飞机头朝右
                                     // 给飞机加个背景遮挡线条
-                                    Rectangle { anchors.fill: parent; color: parent.parent.parent.parent.color; z:-1 }
+                                    Rectangle { anchors.fill: parent; color: cardBg.color; z:-1 }
                                 }
                             }
 
@@ -332,7 +331,7 @@ FluPage {
                                 onClicked: {
                                     // 【修改这里】调用弹窗的 showPay 函数
                                     // 注意：model.price 和 model.order_id 是你 ListElement 或后端返回的字段
-                                    payDialog.showPay(model.order_id, model.price.toString())
+                                    payDialog.showPay(model.order_id.toString(), "", model.price.toString())
                                 }
                             }
                         }
