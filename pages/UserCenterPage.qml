@@ -21,8 +21,8 @@ FluPage {
 
     // 模拟的用户数据（实际开发中应绑定到C++模型或全局单例）
     property string userName: "NickName"
-    property string userTrueName: ""     // 真实姓名
-    property string userIdCard: ""       // 身份证号
+    property string userTrueName: "LongGeGe"     // 真实姓名
+    property string userIdCard: "441500000000000000"       // 身份证号
     property bool isVerified: false      // 是否已实名认证的状态位
 
     property string userGender: "男"

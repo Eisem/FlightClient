@@ -15,7 +15,7 @@ FluPage {
     property string errorMessage: ""
 
     // === 核心逻辑: JS 实现的 HTTP 请求 ===
-    function performRegister(username, password1, password2, telephone,email,ID) {
+    function performRegister(username, password1, password2, telephone,email) {
         errorMessage = ""
         if(password1 !== password2){
             errorMessage = "输入的密码不一致"
@@ -78,7 +78,6 @@ FluPage {
             "password": password1,
             "telephone": telephone,
             "email":email,
-            "ID":ID
         }
         xhr.send(JSON.stringify(data))
     }
@@ -98,26 +97,27 @@ FluPage {
         visible: false  // // 隐藏原始图，只显示特效后的图
     }
 
-    // 特效层 (模糊 + 遮罩)
-    MultiEffect {
-        source: bgSource
+    Item {
+        id: effectLayer
         anchors.fill: bgSource
+        opacity: 0 // <--- 初始状态：完全透明 (即不可见，显示底下的清晰图)
 
-        // 开启模糊
-        blurEnabled: true
-        blurMax: 64      // 模糊的最大范围
-        blur: 1.0       // 当前模糊强度 (0.0 - 1.0)，1.0 最模糊
+        // 毛玻璃 (代码没变，只是被包进来了)
+        MultiEffect {
+            source: bgSource
+            anchors.fill: parent
+            blurEnabled: true
+            blurMax: 64
+            blur: 1.0
+            saturation: 0.5
+        }
 
-        // 调节饱和度 (可选，稍微降低一点饱和度会让文字更清楚)
-        saturation: 0.5
-    }
-
-    // 黑色遮罩层
-    // 加上一层淡淡的黑色，防止背景太亮导致白色文字看不清
-    Rectangle {
-        anchors.fill: bgSource
-        color: "black"
-        opacity: 0.2 // 调节这里改变背景暗度
+        // 黑色遮罩 (代码没变，也被包进来了)
+        Rectangle {
+            anchors.fill: parent
+            color: "black"
+            opacity: 0.2
+        }
     }
 
     // 防止超出屏幕的部分挡住其他窗口
@@ -141,6 +141,7 @@ FluPage {
 
     // 界面部分
     FluFrame{
+        id:registerbox
         radius: 15
         anchors.centerIn: parent
         width:400
@@ -266,26 +267,6 @@ FluPage {
                 }
             }
 
-            Item {
-                width: 250; height: 30
-                FluText {
-                    text: "身份证号:"
-                    anchors.right: inputID.left
-                    anchors.rightMargin: 10
-                    anchors.verticalCenter: inputID.verticalCenter
-                    font.pixelSize:15
-                    font.bold: true
-                }
-
-                FluTextBox {
-                    id:inputID
-
-                    placeholderText: "请输入身份证号"
-                    anchors.verticalCenter: parent.verticalCenter
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    width: 200
-                }
-            }
 
 
             // 错误提示文字
@@ -303,10 +284,48 @@ FluPage {
                 width: 150
                 onClicked: {
                     // 调用上面定义的 JS 函数
-                    performRegister(inputUsername.text, inputPassword1.text,inputPassword2.text,inputTelephone.text,inputEmial.text,inputID.text)
+                    performRegister(inputUsername.text, inputPassword1.text,inputPassword2.text,inputTelephone.text,inputEmial.text)
 
                 }
             }
+        }
+    }
+
+    // 新增并行与串行动画控制器
+    // 逻辑：Component 加载完成后自动运行 (running: true)
+    ParallelAnimation {
+        id: startAnim
+        running: true
+
+        // 动画 A：背景由清晰变模糊
+        // 控制 effectLayer 的透明度从 0 (看不见) 变成 1 (完全覆盖)
+        NumberAnimation {
+            target: effectLayer
+            property: "opacity"
+            from: 0
+            to: 1
+            duration: 800     // 持续 800 毫秒
+            easing.type: Easing.OutCubic // 缓动曲线：先快后慢
+        }
+
+        // 动画 B：登录框向上浮动
+        // 控制 verticalCenterOffset 从 150 (下方) 回归到 0 (正中)
+        NumberAnimation {
+            target: registerbox
+            property: "anchors.verticalCenterOffset"
+            from: 150
+            to: 0
+            duration: 800
+            easing.type: Easing.OutBack // 缓动曲线：带一点回弹效果，更有动感
+        }
+
+        // 动画 C：登录框淡入
+        NumberAnimation {
+            target: registerbox
+            property: "opacity"
+            from: 0
+            to: 1
+            duration: 500
         }
     }
 }
