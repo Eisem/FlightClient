@@ -190,7 +190,7 @@ FluScrollablePage {
         xhr.setRequestHeader("Content-Type", "application/json")
         xhr.onreadystatechange = function(){
             if(xhr.readyState === XMLHttpRequest.DONE){
-                isSearching = false
+                root.isSearching = false
                 if(xhr.status === 200){
                     try {
                         var response = JSON.parse(xhr.responseText)
