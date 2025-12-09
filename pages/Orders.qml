@@ -132,6 +132,15 @@ FluPage {
                 height: isMatch ? 170 : 0 // 稍微增加高度以容纳日期
                 visible: isMatch
 
+                PayDialog {
+                    id: payDialog
+                    // 当支付成功信号触发时，刷新订单列表
+                    onPaymentSuccess: {
+                        console.log("支付成功，正在刷新订单列表...")
+                        ordersPage.fetchOrders() // 重新拉取数据，状态会变为“已支付”
+                    }
+                }
+
 
 
                 // === 卡片本体 ===
@@ -313,12 +322,18 @@ FluPage {
                                 onClicked: showInfo("查看详情: " + model.order_id)
                             }
 
+
+
                             FluFilledButton {
                                 text: "去支付"
                                 height: 32
                                 visible: model.status === 0
                                 normalColor: "#FF9500"; hoverColor: "#FFAA33" // 调整了悬停色
-                                onClicked: showSuccess("跳转支付: " + model.order_id)
+                                onClicked: {
+                                    // 【修改这里】调用弹窗的 showPay 函数
+                                    // 注意：model.price 和 model.order_id 是你 ListElement 或后端返回的字段
+                                    payDialog.showPay(model.order_id, model.price.toString())
+                                }
                             }
                         }
                     }

@@ -20,14 +20,14 @@ FluPage {
     property string errorMessage: ""
 
     // 模拟的用户数据（实际开发中应绑定到C++模型或全局单例）
-    property string userName: "Cema Chu"
+    property string userName: "NickName"
     property string userTrueName: ""     // 真实姓名
     property string userIdCard: ""       // 身份证号
     property bool isVerified: false      // 是否已实名认证的状态位
 
     property string userGender: "男"
-    property string userEmail: "cemachu87@gmail.com\nyangkunwei2024@outlook.com"
-    property string userPhone: "18122903031"
+    property string userEmail: "test@gmail.com\ntest@outlook.com"
+    property string userPhone: "18122903000"
     property string avatarSource: "qrc:/qt/qml/FlightClient/figures/123.jpg" // 替换为你的默认头像路径
 
     // --- 新增：用于控制弹窗逻辑的临时变量 ---
@@ -139,7 +139,12 @@ FluPage {
                             if(d.truename) usercenterpage.userTrueName = d.truename
                             if(d.gender)   usercenterpage.userGender = d.gender
                             if(d.email)    usercenterpage.userEmail = d.email
-                            if(d.phone)    usercenterpage.userPhone = d.phone
+                            if(d.telephone)    usercenterpage.userPhone = d.telephone
+                            if(d.id_card){
+                                usercenterpage.userIdCard = d.id_card
+                                isVerified = true;
+                            }
+
 
                             // 如果后端有返回头像链接，也可以更新头像
                             // if(d.avatar) usercenterpage.avatarSource = d.avatar
