@@ -6,10 +6,9 @@ import FluentUI
 
 FluPage {
     id: root
-    title: "订单确认"
 
     // =========================================================
-    // 1. 接收参数 & 内部状态
+    // 1. 接收参数 (从 FlightSearch 传过来的)
     // =========================================================
     property bool isRoundTrip: false
     property var outboundFlight: null
@@ -17,159 +16,141 @@ FluPage {
     property int totalPrice: 0
     property string currentSeatClass: outboundFlight ? (outboundFlight.seatClass || "经济舱") : "经济舱"
 
-    // 【核心状态】
-    property int outboundOrderId: -1  // 存储去程订单ID
-    property int inboundOrderId: -1   // 存储返程订单ID
-    property bool isOrdersCreated: false // 是否锁座成功
-    property bool isPaid: false          // 是否支付成功
-
-    property string backendBaseUrl: "http://127.0.0.1:8000"
-
     // =========================================================
-    // 2. 生命周期逻辑
+    // 2. 业务逻辑
     // =========================================================
 
-    // 【核心】页面加载完成后，立即自动创建订单（锁座）
-    Component.onCompleted: {
-        // 校验登录
+    // --- 点击“去支付”按钮触发 ---
+    function handleSubmitOrder() {
+        // 1. 校验登录
         if (appWindow.currentUid === "") {
             showError("用户未登录");
-            return; // 实际场景可能需要踢回登录页
+            return;
         }
-        // 立即开始创建订单
-        createAllOrders();
-    }
 
-    // 注意：这里删除了 onDestruction 取消订单的逻辑
-    // 由后端负责清理过期未支付订单
+        showLoading("正在创建订单...");
 
-    // =========================================================
-    // 3. 业务流程函数
-    // =========================================================
+        // 临时变量存储生成的ID
+        var outId = -1;
+        var inId = -1;
 
-    // --- 步骤 A: 创建订单 (进页面自动触发) ---
-    function createAllOrders() {
-        showLoading("正在为您锁定座位...");
-
-        // 1. 创建去程
+        // 2. 链式调用：先创建去程，成功后再创建返程
         createOrderStep(outboundFlight, function(id1) {
-            outboundOrderId = id1; // 存起来
+            outId = id1; // 拿到去程ID
 
             if (isRoundTrip && inboundFlight) {
-                // 2. 创建返程 (如果有)
+                // 如果是往返，继续创建返程
                 createOrderStep(inboundFlight, function(id2) {
-                    inboundOrderId = id2; // 存起来
-                    finishCreation();
+                    inId = id2; // 拿到返程ID
+                    // 两单都成功，触发跳转逻辑
+                    handleJump(outId, inId);
                 });
             } else {
-                finishCreation();
+                // 如果是单程，直接触发跳转逻辑
+                handleJump(outId, -1);
             }
         });
     }
 
-    function finishCreation() {
+    // --- 处理跳转逻辑 (发射信号) ---
+    function handleJump(outId, inId) {
         hideLoading();
-        isOrdersCreated = true;
-        // 锁座成功，启动倒计时
-        countdownTimer.start();
-        showSuccess("座位已锁定，请在 5 分钟内完成支付");
-    }
+        showSuccess("订单已生成");
 
-    // --- 步骤 B: 支付 (点击按钮触发) ---
-    function startPayment() {
-        // 防御性编程：如果没有订单ID，不允许支付
-        if (!isOrdersCreated) return;
-
-        showLoading("正在安全支付...");
-
-        // 1. 支付去程
-        payOrderStep(outboundOrderId, outboundFlight.price, function() {
-            // 2. 支付返程
-            if (isRoundTrip && inboundOrderId !== -1) {
-                payOrderStep(inboundOrderId, inboundFlight.price, function() {
-                    finishPayment();
-                });
-            } else {
-                finishPayment();
-            }
-        });
-    }
-
-    function finishPayment() {
-        hideLoading();
-        isPaid = true;         // 标记为已支付
-        countdownTimer.stop(); // 停止倒计时
-        showSuccess("支付成功！出票中...");
-
-        // 延迟跳转回首页或订单页
+        // 使用定时器缓冲一下，让 loading 动画自然结束
+        delayTimer.callback = function() {
+            PayDialog.showpay(outId, inId, root.totalPrice);
+        }
         delayTimer.start();
     }
 
+    Timer {
+        id: delayTimer
+        interval: 500
+        repeat: false
+        property var callback: null
+        onTriggered: if(callback) callback()
+    }
+
     // =========================================================
-    // 4. 底层请求封装
+    // 3. 网络请求部分
     // =========================================================
 
-    // 创建单笔订单
     function createOrderStep(flightData, callback) {
+        console.log("尝试连接后端创建订单")
+
+        // 1. 准备数据 Payload
         var payload = {
             "user_id": parseInt(appWindow.currentUid),
             "flight_id": flightData.flight_id || 0,
             "seat_type": mapSeatType(currentSeatClass),
-            "seat_number": generateSeatNumber(),
+            "seat_number": generateSeatNumber(), // 随机分配一个座位
             "status": "未支付"
-        };
-        sendRequest("/api/create_order", "POST", payload, function(resp) {
-            callback(resp.order_id);
-        }, function(err) {
-            hideLoading();
-            showError("锁座失败，请重试: " + err);
-            // 失败处理：可以把 isOrdersCreated 设为 false，并显示“重试”按钮
-        });
-    }
+        }
 
-    // 支付单笔订单
-    function payOrderStep(oid, amount, callback) {
-        var payload = {
-            "order_id": oid.toString(),
-            "amount": parseFloat(amount)
-        };
-        sendRequest("/api/payment", "POST", payload, function(resp) {
-            callback();
-        }, function(err) {
-            hideLoading();
-            showError("支付失败: " + err);
-        });
-    }
+        // 2. 创建 XMLHttpRequest 对象
+        var xhr = new XMLHttpRequest()
+        var url = backendBaseUrl + "/api/create_order"
+        console.log("请求地址: " + url)
 
-    // 通用请求
-    function sendRequest(route, method, data, successCallback, errorCallback) {
-        var xhr = new XMLHttpRequest();
-        xhr.open(method, backendBaseUrl + route, true);
-        xhr.setRequestHeader("Content-Type", "application/json");
+        xhr.open("POST", url, true)
+        xhr.setRequestHeader("Content-Type", "application/json")
+
+        // 3. 监听状态变化
         xhr.onreadystatechange = function() {
+            // readyState == 4 表示请求完成
             if (xhr.readyState === XMLHttpRequest.DONE) {
+                // 先判断 HTTP 状态码
                 if (xhr.status === 200) {
                     try {
-                        var resp = JSON.parse(xhr.responseText);
-                        if (resp.status === "success") successCallback(resp);
-                        else errorCallback(resp.message || "未知错误");
-                    } catch (e) { errorCallback("解析失败"); }
-                } else { errorCallback("网络错误: " + xhr.status); }
+                        var response = JSON.parse(xhr.responseText)
+
+                        // 根据后端返回结构判断成功
+                        if(response.status === "success" && response.order_id){
+                            // 成功逻辑：调用回调函数，传回 order_id
+                            callback(response.order_id)
+                        } else {
+                            // 业务逻辑失败 (例如 status 不是 success)
+                            hideLoading()
+                            showError(response.message || "订单创建失败: 未知错误")
+                        }
+                    } catch(e) {
+                        console.log("JSON解析失败:", e)
+                        hideLoading()
+                        showError("数据解析错误")
+                    }
+                } else {
+                    // 处理非 200 的情况 (比如 500 服务器错误)
+                    try {
+                        // 尝试解析后端返回的 JSON 错误信息
+                        var errResp = JSON.parse(xhr.responseText)
+                        hideLoading()
+                        showError(errResp.message || ("请求失败: " + xhr.status))
+                    } catch(e) {
+                        // 如果无法解析，直接显示状态码
+                        hideLoading()
+                        showError("服务器错误: " + xhr.status + " " + xhr.statusText)
+                    }
+                }
             }
-        };
-        xhr.send(data ? JSON.stringify(data) : null);
+        }
+
+        // 4. 发送 JSON 数据
+        xhr.send(JSON.stringify(payload))
     }
 
-    // 辅助工具
+    // --- 辅助工具函数 ---
     function mapSeatType(clsName) {
         if (clsName === "公务/头等舱") return 1;
-        if (clsName === "头等舱") return 2;
-        return 0;
+        // if (clsName === "头等舱") return 2;
+        return 0; // 经济舱
     }
-    // 随机生成座位 (后端要求不为空)
+
+    // 随机生成座位
     function generateSeatNumber() {
         return (Math.floor(Math.random()*30)+1) + ["A","B","C","D","E","F"][Math.floor(Math.random()*6)];
     }
+
     function getCityName(str) { return str ? str.replace(/\(.*\)/, "").replace("机场", "").trim() : "" }
     function getAirportName(str) {
         if (!str) return "";
@@ -178,41 +159,9 @@ FluPage {
     }
 
     // =========================================================
-    // 5. UI 部分
+    // 4. UI 界面部分 (保持设计不变)
     // =========================================================
 
-    // 倒计时逻辑
-    property int remainingSeconds: 300
-    function formatTime(s) { return (Math.floor(s/60)<10?"0":"") + Math.floor(s/60) + ":" + (s%60<10?"0":"") + s%60 }
-
-    Timer {
-        id: countdownTimer
-        interval: 1000; running: false; repeat: true // 默认不运行，等订单创建完再运行
-        onTriggered: {
-            if (remainingSeconds > 0) {
-                remainingSeconds--;
-            } else {
-                running = false;
-                // 【超时逻辑】只做视觉处理，不发请求
-                if (!isPaid) {
-                    showError("支付超时，订单已失效");
-                    // 按钮状态会在下面自动更新
-                }
-            }
-        }
-    }
-
-    Timer {
-        id: delayTimer
-        interval: 1500
-        repeat: false
-        onTriggered: appWindow.gotoDashboard()
-    }
-
-    // 默认数据(防崩)
-    property var defaultFlight: ({dep_airport:"珠海(ZUH)",arr_airport:"北京(BJS)",departure_time:"08:00",landing_time:"11:00",airline:"测试航空",flight_number:"T123",aircraft_model:"737",departure_date:"2025-11-29",flight_id:0})
-
-    // 组件：航班行
     component FlightTextRow : Item {
         property var flight
         property string tag
@@ -236,13 +185,14 @@ FluPage {
     Flickable {
         anchors.fill: parent; anchors.bottomMargin: 80
         contentHeight: contentCol.height + 40; clip: true
+
         ColumnLayout {
             id: contentCol
             width: parent.width; anchors.horizontalCenter: parent.horizontalCenter
             Layout.maximumWidth: 800; spacing: 15
             Item { Layout.preferredHeight: 10 }
 
-            // 订单详情卡片
+            // 信息卡片
             Rectangle {
                 Layout.fillWidth: true; Layout.leftMargin: 20; Layout.rightMargin: 20
                 Layout.preferredHeight: innerCol.implicitHeight + 40
@@ -255,14 +205,11 @@ FluPage {
                     anchors.fill: parent; anchors.margins: 25; spacing: 20
                     RowLayout {
                         Layout.fillWidth: true
-                        Text { text: "订单金额"; font.pixelSize: 14; color: "#666"; Layout.alignment: Qt.AlignBaseline }
+                        Text { text: "订单总额"; font.pixelSize: 14; color: "#666"; Layout.alignment: Qt.AlignBaseline }
                         Text { text: "¥ " + totalPrice; font.pixelSize: 28; font.bold: true; color: "#FF9500"; Layout.alignment: Qt.AlignBaseline }
-                        Item { Layout.fillWidth: true }
-                        Text { text: "剩余时间 "; font.pixelSize: 12; color: "#999" }
-                        Text { text: formatTime(remainingSeconds); font.pixelSize: 14; color: "#FF4D4F"; font.family: "Arial" }
                     }
                     Rectangle { Layout.fillWidth: true; height: 1; color: "#f0f0f0" }
-                    FlightTextRow { flight: outboundFlight || defaultFlight; tag: isRoundTrip?"去程":"单程"; tagColor: "#0086F6" }
+                    FlightTextRow { flight: outboundFlight || {}; tag: isRoundTrip?"去程":"单程"; tagColor: "#0086F6" }
                     Rectangle { visible: isRoundTrip; Layout.fillWidth: true; height: 1; color: "#f0f0f0"; opacity: 0.5 }
                     FlightTextRow { visible: isRoundTrip; flight: inboundFlight; tag: "返程"; tagColor: "#FF9500" }
                     Rectangle { Layout.fillWidth: true; height: 1; color: "#f0f0f0" }
@@ -274,10 +221,16 @@ FluPage {
                 }
             }
 
+            // 底部提示
+            RowLayout {
+                Layout.fillWidth: true; Layout.leftMargin: 25; Layout.rightMargin: 25
+                FluIcon { iconSource: FluentIcons.Info; iconSize: 14; color: "#999" }
+                Text { text: "点击去支付即表示您已阅读并同意《购票须知》"; color: "#999"; font.pixelSize: 12; Layout.fillWidth: true; wrapMode: Text.WordWrap }
+            }
         }
     }
 
-    // 底部栏
+    // 底部栏 (提交订单)
     Rectangle {
         width: parent.width; height: 80; color: FluTheme.dark ? "#2D2D2D" : "#FFFFFF"; anchors.bottom: parent.bottom
         FluShadow { anchors.fill: parent; radius: 0; elevation: 10; color: "#11000000" }
@@ -288,24 +241,18 @@ FluPage {
                 Text { text: "¥" + totalPrice; color: "#FF4D4F"; font.pixelSize: 24; font.bold: true }
             }
             Item { Layout.fillWidth: true }
+
+            // 去支付按钮
             FluFilledButton {
-                // 按钮文案随状态变化
-                text: {
-                    if (!isOrdersCreated) return "正在锁座..."
-                    if (remainingSeconds <= 0) return "已超时"
-                    return "立即支付"
-                }
+                text: "去支付"
                 width: 160; height: 44
-                normalColor: (remainingSeconds <= 0 || !isOrdersCreated) ? "#CCC" : "#FF9500"
+                normalColor: "#FF9500"
                 hoverColor: "#E68600"
                 textColor: "white"
                 font.bold: true; font.pixelSize: 18
 
-                // 逻辑：只有[订单已创建] 且 [没超时] 且 [没支付] 才能点
-                disabled: (!isOrdersCreated) || (remainingSeconds <= 0) || isPaid
-
-                // 点击触发支付
-                onClicked: startPayment()
+                // 点击后，执行下单逻辑，下单成功后自动发信号
+                onClicked: handleSubmitOrder()
             }
         }
     }
