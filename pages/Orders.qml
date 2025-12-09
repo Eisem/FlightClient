@@ -331,11 +331,7 @@ FluPage {
                                 onClicked: {
                                     // 【修改这里】调用弹窗的 showPay 函数
                                     // 注意：model.price 和 model.order_id 是你 ListElement 或后端返回的字段
-<<<<<<< HEAD
-                                    payDialog.showPay(model.order_id,-1,model.price.toString())
-=======
                                     payDialog.showPay(model.order_id.toString(), "", model.price.toString())
->>>>>>> c8e0cfb20b6b25cfb90edb700d4a289f334c00ba
                                 }
                             }
                         }

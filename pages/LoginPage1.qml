@@ -221,7 +221,6 @@ FluPage {
                     id: labelText2 // 给它个 ID，方便别人引用
                     text: "密   码:"
                     anchors.left: parent.left
-                    anchors.right:labelText.right
                     anchors.verticalCenter: parent.verticalCenter // 垂直居中
                     font.pixelSize:15
                     font.bold: true
