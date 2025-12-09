@@ -7,8 +7,8 @@ Popup {
     id: payPopup
 
     // === 公开属性，供外部调用时设置 ===
-    property string orderId: ""
-
+    property string outId: ""
+    property string inId: ""
     property string amount: "0"
 
     // 定义一个信号，支付成功后触发，通知父页面刷新
@@ -107,7 +107,7 @@ Popup {
                         text: "微信支付"
                         ButtonGroup.group: payGroup
                     }
-                    FluIcon { iconSource: FluentIcons.Chat; color: "#09BB07" } // 模拟微信图标颜色
+                    FluIcon { iconSource: FluentIcons.Message; color: "#09BB07" } // 模拟微信图标颜色
                 }
 
                 RowLayout {
@@ -140,48 +140,97 @@ Popup {
 
     // === 支付逻辑 ===
     function handlePay() {
-        console.log("开始支付订单:", orderId)
+        console.log("开始支付流程, OutId:", outId, "InId:", inId)
+        var uid = parseInt(appWindow.currentUid)
+        // 1. 金额拆分逻辑
+        var totalVal = parseFloat(amount);
+        var priceOut = 0.0;
+        var priceIn = 0.0;
 
-        var xhr = new XMLHttpRequest()
-        var url = backendBaseUrl + "/api/pay"
+        // ============================================================
+        // 使用非空字符串判断是否存在返程
+        // ============================================================
+        if (inId !== "") {
+            // 往返策略
+            priceOut = 1.0;
+            priceIn = totalVal - 1.0;
+            if (priceIn < 0) { priceOut = totalVal / 2.0; priceIn = totalVal / 2.0; }
+        } else {
+            // 单程策略
+            priceOut = totalVal;
+            priceIn = 0.0;
+        }
 
-        xhr.open("POST", url, true)
-        xhr.setRequestHeader("Content-Type", "application/json")
+        function payRequest(oid, payAmount, callback) {
+            var xhr = new XMLHttpRequest()
+            var url = backendBaseUrl + "/api/payment"
 
-        xhr.onreadystatechange = function() {
-            if (xhr.readyState === XMLHttpRequest.DONE) {
-                if (xhr.status === 200) {
-                    try {
-                        var response = JSON.parse(xhr.responseText)
-                        if (response.status === "success") {
-                            showSuccess("支付成功！")
-                            payPopup.close()
-                            // 触发成功信号，让外部页面去刷新列表
-                            payPopup.paymentSuccess()
-                        } else {
-                            showError(response.message || "支付失败")
+            xhr.open("POST", url, true)
+            xhr.setRequestHeader("Content-Type", "application/json")
+
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === XMLHttpRequest.DONE) {
+                    if (xhr.status === 200) {
+                        try {
+                            var response = JSON.parse(xhr.responseText)
+                            if (response.status === "success") {
+                                callback(true)
+                            } else {
+                                showError(response.message || ("订单 " + oid + " 支付失败"))
+                                callback(false)
+                            }
+                        } catch (e) {
+                            showError("响应解析失败")
+                            callback(false)
                         }
-                    } catch (e) {
-                        showError("支付响应解析失败")
+                    } else {
+                        showError("网络错误: " + xhr.status)
+                        callback(false)
                     }
-                } else {
-                    showError("网络错误: " + xhr.status)
                 }
             }
+
+            // ============================================================
+            // 构建参数：全部统一为 String 传给后端 (后端 Controller 需要支持或转换)
+            // ============================================================
+            var data = {
+                "user_id": uid,
+                "order_id": oid,
+                "amount": parseFloat(payAmount) // 金额建议保持数值类型，或者也转字符串 payAmount.toString()，看你后端需求
+            }
+
+            xhr.send(JSON.stringify(data))
         }
 
-        var data = {
-            "order_id": orderId,
-            "uid": appWindow.currentUid,
-            "payment_method": "wechat" // 这里可以根据 payGroup.checkedButton 动态获取
-        }
-        xhr.send(JSON.stringify(data))
+        // 2. 执行链式支付
+        payRequest(outId, priceOut, function(success1) {
+            if (!success1) return;
+            if (inId !== "") {
+                console.log("正在支付返程...")
+                payRequest(inId, priceIn, function(success2) {
+                    if (success2) handleFinalSuccess()
+                })
+            } else {
+                handleFinalSuccess()
+            }
+        })
+    }
+
+    // 支付全部完成后的收尾逻辑
+    function handleFinalSuccess() {
+        showSuccess("支付成功！")
+        payPopup.close()
+        // 触发成功信号，让外部页面刷新列表
+        paymentSuccess()
     }
 
     // 供外部调用的简便函数
-    function showPay(oid, price) {
-        orderId = oid
-        amount = price
+    function showPay(oid, iId, price) {
+        // 强制转为字符串，确保类型安全
+        outId = oid.toString()
+        // 如果 iId 没传或者为空，就设为 ""
+        inId = (iId === undefined || iId === null) ? "" : iId.toString()
+        amount = price.toString()
         open()
     }
 }

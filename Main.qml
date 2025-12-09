@@ -13,7 +13,7 @@ FluWindow {
     minimumWidth: 1000
     // === 新增: 全局存储 UID ===
     // 所有页面都可以通过 appWindow.currentUid 访问
-    property string currentUid: "12"
+    property string currentUid: ""
 
     Loader {
         id: pageLoader
