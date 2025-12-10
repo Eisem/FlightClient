@@ -20,6 +20,85 @@ FluPage {
         }
     }
 
+// === 2. 页面加载时获取数据 ===
+    Component.onCompleted: {
+        fetchOrders()
+    }
+
+    // === 3. 网络请求逻辑 ===
+
+    // 获取订单列表
+    function fetchOrders() {
+        console.log("start fetch orders")
+        if (appWindow.currentUid === "") return
+
+        var xhr = new XMLHttpRequest()
+        var url = backendBaseUrl + "/api/orders"
+        xhr.open("POST", url, true)
+        xhr.setRequestHeader("Content-Type", "application/json")
+
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState === XMLHttpRequest.DONE) {
+                if (xhr.status === 200) {
+                    try {
+                        var response = JSON.parse(xhr.responseText)
+                        if (response.status === "success") {
+                            orderModel.clear()
+                            var orders = response.data
+                            for (var i = 0; i < orders.length; i++) {
+                                orderModel.append(orders[i])
+                            }
+                        }
+                    } catch (e) {
+                        console.log("JSON解析错误")
+                    }
+                }
+            }
+        }
+        var data = { "user_id": parseInt(appWindow.currentUid) }
+        xhr.send(JSON.stringify(data))
+    }
+
+    // 【新增】删除订单函数
+    function deleteOrder(orderId) {
+        // 这里可以加一个确认弹窗，为了简单直接演示核心逻辑：
+        var xhr = new XMLHttpRequest()
+        var url = backendBaseUrl + "/api/delete_order" // 你的后端删除接口
+
+        xhr.open("POST", url, true)
+        xhr.setRequestHeader("Content-Type", "application/json")
+
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState === XMLHttpRequest.DONE) {
+                if (xhr.status === 200) {
+                    try {
+                        var response = JSON.parse(xhr.responseText)
+                        if (response.status === "success") {
+                            showSuccess("订单删除成功")
+                            // 删除成功后刷新列表
+                            root.fetchOrders()
+                        } else {
+                            showError(response.message || "删除失败")
+                        }
+                    } catch (e) {
+                        showError("服务器响应解析失败")
+                    }
+                } else {
+                    showError("网络请求失败: " + xhr.status)
+                }
+            }
+        }
+
+        // 构建后端需要的参数
+        var data = {
+            "uid": parseInt(appWindow.currentUid),
+            "order_id": orderId // 这里透传 model 中的 order_id
+        }
+        xhr.send(JSON.stringify(data))
+    }
+
+
+
     // === 2. 核心动画逻辑 (保留原逻辑) ===
     SequentialAnimation {
         id: refreshAnim
@@ -307,11 +386,16 @@ FluPage {
                         Row {
                             spacing: 12; anchors.verticalCenter: parent.verticalCenter; anchors.right: parent.right
 
+                            // === 重点修改：删除按钮 ===
                             FluButton {
                                 text: "删除订单"
                                 height: 32
-                                visible: model.status === 1 // 已完成可删除
-                                onClicked: showInfo("删除逻辑待实现")
+                                // 只有已完成(状态1)或已取消的订单可以删除
+                                visible: (model.status === 1 || model.status === "已完成")
+                                onClicked: {
+                                    // 调用上面定义的删除函数
+                                    root.deleteOrder(model.order_id)
+                                }
                             }
 
                             FluButton {

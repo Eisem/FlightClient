@@ -291,7 +291,7 @@ FluPage {
             property: "opacity"
             from: 0
             to: 1
-            duration: 800     // 持续 800 毫秒
+            duration: 300     // 持续 800 毫秒
             easing.type: Easing.OutCubic // 缓动曲线：先快后慢
         }
 
@@ -302,7 +302,7 @@ FluPage {
             property: "anchors.verticalCenterOffset"
             from: 150
             to: 0
-            duration: 800
+            duration: 300
             easing.type: Easing.OutBack // 缓动曲线：带一点回弹效果，更有动感
         }
 
@@ -312,7 +312,7 @@ FluPage {
             property: "opacity"
             from: 0
             to: 1
-            duration: 500
+            duration: 300
         }
     }
 }
