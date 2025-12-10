@@ -160,22 +160,81 @@ FluPage {
     // 4. UI 界面部分 (保持设计不变)
     // =========================================================
 
+    // 定义航班信息行组件 (修改版：详细列表样式)
     component FlightTextRow : Item {
         property var flight
         property string tag
         property color tagColor
-        property string dateStr: (flight && flight.departure_date) ? flight.departure_date : "2025-11-29"
-        Layout.fillWidth: true; Layout.preferredHeight: 80
+
+        Layout.fillWidth: true
+        implicitHeight: mainCol.implicitHeight
+
         ColumnLayout {
-            anchors.fill: parent; spacing: 8
+            id: mainCol
+            anchors.fill: parent
+            spacing: 12
+
+            // 1. 顶部 Header (保持原有的 [去程] 城市 - 城市)
+            // 这一行还需要，用来区分去程和返程
             RowLayout {
                 spacing: 10
-                Rectangle { color: tagColor; radius: 2; width: 36; height: 18; Text { anchors.centerIn: parent; text: tag; color: "white"; font.pixelSize: 11 } }
-                Text { text: getCityName(flight?flight.dep_airport:"") + " - " + getCityName(flight?flight.arr_airport:""); font.pixelSize: 16; color: "#333"; font.bold: true }
+                Rectangle {
+                    color: tagColor
+                    radius: 2; width: 36; height: 18
+                    Text { anchors.centerIn: parent; text: tag; color: "white"; font.pixelSize: 11 }
+                }
+                Text {
+                    text: getCityName(flight?flight.dep_airport:"") + " - " + getCityName(flight?flight.arr_airport:"")
+                    font.pixelSize: 16; color: "#333"; font.bold: true
+                }
                 Item { Layout.fillWidth: true }
-                Text { text: root.currentSeatClass; color: "#999"; font.pixelSize: 12 }
             }
-            Text { text: "飞机 " + getAirportName(flight?flight.dep_airport:"") + " - " + getAirportName(flight?flight.arr_airport:"") + "  出发时间: " + dateStr + " " + (flight?flight.departure_time:""); color: "#666"; font.pixelSize: 12; elide: Text.ElideRight; Layout.fillWidth: true }
+
+            Rectangle { Layout.fillWidth: true; height: 1; color: "#f0f0f0" }
+
+            // 2. 详细信息列表
+            ColumnLayout {
+                Layout.fillWidth: true
+                spacing: 8 // 各行文字间距
+
+                Text {
+                    text: "出发地点： " + getCityName(flight?flight.dep_airport:"") + "机场"
+                    color: "#666"; font.pixelSize: 14
+                    Layout.fillWidth: true
+                }
+
+                Text {
+                    text: "到达地点： " + getCityName(flight?flight.arr_airport:"") + "机场"
+                    color: "#666"; font.pixelSize: 14
+                    Layout.fillWidth: true
+                }
+
+                Text {
+                    text: "航班号： " + (flight ? flight.flight_number : "--")
+                    color: "#666"; font.pixelSize: 14
+                    Layout.fillWidth: true
+                }
+
+                Text {
+                    text: "座位类型：" + root.currentSeatClass
+                    color: "#666"; font.pixelSize: 14
+                    Layout.fillWidth: true
+                }
+
+                Text {
+                    // 拼接日期和时间
+                    text: "预计出发时间:  " + (flight ? (flight.departure_date + " " + flight.departure_time) : "")
+                    color: "#666"; font.pixelSize: 14
+                    Layout.fillWidth: true
+                }
+
+                Text {
+                    // 到达时间 (FlightSearch 的数据包含 landing_time)
+                    text: "预计到达时间:  " + (flight ? flight.departure_date + " " + flight.landing_time : "")
+                    color: "#666"; font.pixelSize: 14
+                    Layout.fillWidth: true
+                }
+            }
         }
     }
 
@@ -202,8 +261,8 @@ FluPage {
 
         ColumnLayout {
             id: contentCol
-            width: parent.width; anchors.horizontalCenter: parent.horizontalCenter
-            Layout.maximumWidth: 800; spacing: 15
+            width: parent.width * 0.8; anchors.horizontalCenter: parent.horizontalCenter
+            Layout.maximumWidth: 800; spacing: 16
             Item { Layout.preferredHeight: 20 }
 
             // 信息卡片
@@ -239,7 +298,7 @@ FluPage {
             RowLayout {
                 Layout.fillWidth: true; Layout.leftMargin: 25; Layout.rightMargin: 25
                 FluIcon { iconSource: FluentIcons.Info; iconSize: 14; color: "#999" }
-                Text { text: "点击去支付即表示您已阅读并同意《购票须知》"; color: "#999"; font.pixelSize: 12; Layout.fillWidth: true; wrapMode: Text.WordWrap }
+                Text { text: "点击去支付即表示您已阅读并同意《购票须知》"; color: "#999"; font.pixelSize: 14; Layout.fillWidth: true; wrapMode: Text.WordWrap }
             }
         }
     }
@@ -251,7 +310,7 @@ FluPage {
         RowLayout {
             anchors.fill: parent; anchors.margins: 20
             Column {
-                Text { text: "应付总额"; color: "#666"; font.pixelSize: 12 }
+                Text { text: "应付总额"; color: "#666"; font.pixelSize: 14 }
                 Text { text: "¥" + totalPrice; color: "#FF4D4F"; font.pixelSize: 24; font.bold: true }
             }
             Item { Layout.fillWidth: true }

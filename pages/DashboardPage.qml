@@ -74,8 +74,6 @@ FluPage {
                 }
             }
 
-
-
             FluTextButton {
                 text: "登录"
                 onClicked: {

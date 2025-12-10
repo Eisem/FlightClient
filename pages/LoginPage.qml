@@ -20,6 +20,7 @@ FluPage {
     function performLogin(username, password) {
         if(!useBackend.checked){
             console.log("前端本地登录")
+            appWindow.currentUid = "123"
             loginPage.loginSuccessSignal()
             return;
         }
@@ -67,7 +68,7 @@ FluPage {
                         // 【修改点3】根据后端 C++ 的结构修改字段获取方式
                         // 后端返回的是: { "status": "success", "user": { "id": 1, ... } }
                         if(response.status === "success" && response.user && response.user.id){
-                            appWindow.currentUid = response.user.             id // 是 user.id 不是 data.uid
+                            appWindow.currentUid = response.user.id // 是 user.id 不是 data.uid
                             showSuccess("登录成功")
                             loginPage.loginSuccessSignal()
                         } else {
@@ -112,29 +113,33 @@ FluPage {
         height: parent.height + 100
 
         fillMode: Image.PreserveAspectCrop // 等比裁剪填满屏幕
-        visible: false  // // 隐藏原始图，只显示特效后的图
+        visible: true  // // 隐藏原始图，只显示特效后的图
     }
 
-    // 特效层 (模糊 + 遮罩)
-    MultiEffect {
-        source: bgSource
+    // 特效层容器：新建一个 Item 包裹模糊和遮罩
+    // 逻辑：把模糊效果和黑色遮罩打个包，初始设为全透明 (opacity: 0)。
+    // 动画开始时，只需要把这个 Item 的透明度从 0 变到 1，就实现了“变模糊”的效果。
+    Item {
+        id: effectLayer
         anchors.fill: bgSource
+        opacity: 0 // <--- 初始状态：完全透明 (即不可见，显示底下的清晰图)
 
-        // 开启模糊
-        blurEnabled: true
-        blurMax: 64      // 模糊的最大范围
-        blur: 1.0       // 当前模糊强度 (0.0 - 1.0)，1.0 最模糊
+        // 毛玻璃 (代码没变，只是被包进来了)
+        MultiEffect {
+            source: bgSource
+            anchors.fill: parent
+            blurEnabled: true
+            blurMax: 64
+            blur: 1.0
+            saturation: 0.5
+        }
 
-        // 调节饱和度 (可选，稍微降低一点饱和度会让文字更清楚)
-        saturation: 0.5
-    }
-
-    // 黑色遮罩层
-    // 加上一层淡淡的黑色，防止背景太亮导致白色文字看不清
-    Rectangle {
-        anchors.fill: bgSource
-        color: "black"
-        opacity: 0.2 // 调节这里改变背景暗度
+        // 黑色遮罩 (代码没变，也被包进来了)
+        Rectangle {
+            anchors.fill: parent
+            color: "black"
+            opacity: 0.2
+        }
     }
 
     // 防止超出屏幕的部分挡住其他窗口
@@ -157,10 +162,19 @@ FluPage {
     }
 
     FluFrame{
+        id: loginBox
         radius: 15
         anchors.centerIn: parent
         width:400
         height: 450
+
+        // 位置偏移与初始透明度
+        // 逻辑：为了实现“从下往上浮出”的效果，我们先让它往下偏 300 像素
+        anchors.verticalCenterOffset: 300
+
+        // 逻辑：刚开始看不见，等动画开始了再渐显
+        opacity: 0
+
         //RGBA，调透明度
         color: Qt.rgba(1, 1, 1, 0.5)
         Column {
@@ -207,7 +221,6 @@ FluPage {
                     id: labelText2 // 给它个 ID，方便别人引用
                     text: "密   码:"
                     anchors.left: parent.left
-                    anchors.right:labelText.right
                     anchors.verticalCenter: parent.verticalCenter // 垂直居中
                     font.pixelSize:15
                     font.bold: true
@@ -264,4 +277,42 @@ FluPage {
         anchors.left: parent.left
     }
 
+
+    // 新增并行与串行动画控制器
+    // 逻辑：Component 加载完成后自动运行 (running: true)
+    ParallelAnimation {
+        id: startAnim
+        running: true
+
+        // 动画 A：背景由清晰变模糊
+        // 控制 effectLayer 的透明度从 0 (看不见) 变成 1 (完全覆盖)
+        NumberAnimation {
+            target: effectLayer
+            property: "opacity"
+            from: 0
+            to: 1
+            duration: 300     // 持续 800 毫秒
+            easing.type: Easing.OutCubic // 缓动曲线：先快后慢
+        }
+
+        // 动画 B：登录框向上浮动
+        // 控制 verticalCenterOffset 从 150 (下方) 回归到 0 (正中)
+        NumberAnimation {
+            target: loginBox
+            property: "anchors.verticalCenterOffset"
+            from: 150
+            to: 0
+            duration: 300
+            easing.type: Easing.OutBack // 缓动曲线：带一点回弹效果，更有动感
+        }
+
+        // 动画 C：登录框淡入
+        NumberAnimation {
+            target: loginBox
+            property: "opacity"
+            from: 0
+            to: 1
+            duration: 300
+        }
+    }
 }

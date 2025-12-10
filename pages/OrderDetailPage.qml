@@ -133,40 +133,40 @@ FluPage {
                         Text {
                             // Layout.alignment: Qt.AlignCenter
                             text: "订单号:  " + root.orderId
-                            font.pixelSize: 12
+                            font.pixelSize: 14
                             color: "#666"
                         }
 
                         Text {
                             text: "出发地点： " + getCityName(root.depCity)+"机场"
-                            color: "#666"; font.pixelSize: 12
+                            color: "#666"; font.pixelSize: 14
                             elide: Text.ElideRight
                             Layout.fillWidth: true
                         }
 
                         Text {
                             text: "到达地点： " + getCityName(root.arrCity)+"机场"
-                            color: "#666"; font.pixelSize: 12
+                            color: "#666"; font.pixelSize: 14
                             elide: Text.ElideRight
                             Layout.fillWidth: true
                         }
 
                         Text {
                             text: "航班号： " + root.flightNumber
-                            color: "#666"; font.pixelSize: 12
+                            color: "#666"; font.pixelSize: 14
                             Layout.fillWidth: true
                         }
 
                         Text {
                             text: "预计出发时间:  " + root.depTime
-                            color: "#666"; font.pixelSize: 12
+                            color: "#666"; font.pixelSize: 14
                             elide: Text.ElideRight
                             Layout.fillWidth: true
                         }
 
                         Text {
                             text: "预计到达时间:  " + getDate(depTime) + " " + root.arrTime
-                            color: "#666"; font.pixelSize: 12
+                            color: "#666"; font.pixelSize: 14
                             elide: Text.ElideRight
                             Layout.fillWidth: true
                         }
@@ -183,13 +183,13 @@ FluPage {
                         FluIcon { iconSource: FluentIcons.Contact; iconSize: 16; color: "#999" }
                         Text {
                             text: "乘机人UID: " + appWindow.currentUid;
-                            color: "#999"; font.pixelSize: 12
+                            color: "#999"; font.pixelSize: 14
                         }
 
                         Item { Layout.fillWidth: true }
 
                         // 价格 (右侧)
-                        Text { text: "总额"; color: "#666"; font.pixelSize: 12; Layout.alignment: Qt.AlignBaseline }
+                        Text { text: "总额"; color: "#666"; font.pixelSize: 14; Layout.alignment: Qt.AlignBaseline }
                         Text {
                             text: "¥" + root.price
                             color: "#FF4D4F"; font.pixelSize: 20; font.bold: true; Layout.alignment: Qt.AlignBaseline
