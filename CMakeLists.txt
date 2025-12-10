@@ -42,6 +42,7 @@ qt_add_qml_module(appFlightClient
         QML_FILES pages/BookingPage.qml
         QML_FILES pages/PayDialog.qml
         QML_FILES pages/About.qml
+        QML_FILES pages/OrderDetailPage.qml
 )
 
 set_target_properties(appFlightClient PROPERTIES

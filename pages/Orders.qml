@@ -230,7 +230,6 @@ FluPage {
                     border.width: 1
                     border.color: FluTheme.dark ? "#333" : "#e0e0e0"
 
-
                     // --- 1. 顶部 Header (订单号 + 状态) ---
                     Item {
                         id: headerArea
@@ -402,10 +401,20 @@ FluPage {
                                 text: "查看详情"
                                 height: 32
                                 visible: model.status !== 0
-                                onClicked: showInfo("查看详情: " + model.order_id)
+                                onClicked: {
+                                    showInfo("查看详情: " + model.order_id)
+                                    nav_view.push("qrc:/qt/qml/FlightClient/pages/OrderDetailPage.qml", {
+                                        "orderId": model.order_id,
+                                        "flightNumber": model.flight_number,
+                                        "depCity": model.dep_city,
+                                        "arrCity": model.arr_city,
+                                        "depTime": model.dep_time,
+                                        "arrTime": model.arr_time,
+                                        "price": parseFloat(model.price), // 确保转为数字
+                                        "status": model.status
+                                    })
+                                }
                             }
-
-
 
                             FluFilledButton {
                                 text: "去支付"
