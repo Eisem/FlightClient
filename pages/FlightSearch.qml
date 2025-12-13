@@ -339,7 +339,7 @@ FluScrollablePage {
                     FluComboBox {
                         id: comboClass
                         width: 140
-                        model: ["经济舱", "公务/头等舱"]
+                        model: ["经济舱", "商务舱", "头等舱"]
                         currentIndex: 0
                         z: 999 // 保证下拉菜单在最上层
 
@@ -564,7 +564,34 @@ FluScrollablePage {
                         Layout.preferredHeight: 60 // 高度跟输入框对齐
                         Layout.preferredWidth: 120 // 固定宽度
                         text: "搜索"
-                        normalColor: "#FF9500"
+                        // normalColor: "#FF9500"
+                        background: Item {
+                            implicitWidth: 160
+                            implicitHeight: 44
+
+                            Rectangle {
+                                id: bgRect
+                                anchors.fill: parent
+                                radius: 4
+
+                                gradient: Gradient {
+                                    orientation: Gradient.Horizontal
+                                    // 左边：从原来的亮黄改成 沉稳的蜜桔色
+                                    GradientStop { position: 0.0; color: "#FFB03B" }
+                                    // 右边：深橙色
+                                    GradientStop { position: 1.0; color: "#FF8800" }
+                                }
+                            }
+
+                            // 交互反馈 (鼠标悬停/按压变暗)
+                            Rectangle {
+                                anchors.fill: parent
+                                radius: 4
+                                color: "black"
+                                // 按下时 10% 透明度黑，悬停时 5% 透明度黑，平时完全透明
+                                opacity: parent.parent.down ? 0.1 : (parent.parent.hovered ? 0.05 : 0)
+                            }
+                        }
                         hoverColor: "#E68600"
                         textColor: "white"
                         font.pixelSize: 18
