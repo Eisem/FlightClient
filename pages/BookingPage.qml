@@ -102,8 +102,7 @@ FluPage {
             "user_id": parseInt(appWindow.currentUid),
             "flight_id": flightData.flight_id || 0,
             "seat_type": mapSeatType(currentSeatClass),
-            "seat_number": isOutbound ? selectedSeatLetterOut : selectedSeatLetterIn,
-            "status": "未支付"
+            "prefer_letter": isOutbound ? selectedSeatLetterOut : selectedSeatLetterIn,
         }
 
         console.log("发送创建订单数据：", JSON.stringify(payload))
