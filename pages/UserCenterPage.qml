@@ -25,6 +25,10 @@ FluPage {
     property string userIdCard: "441500000000000000"       // 身份证号
     property bool isVerified: false      // 是否已实名认证的状态位
 
+    // [新增] 账户余额属性，默认为 0.00
+    property string userBalance: "0.00"
+
+
     property string userGender: "男"
     property string userEmail: "test@gmail.com\ntest@outlook.com"
     property string userPhone: "18122903000"
@@ -144,6 +148,10 @@ FluPage {
                                 usercenterpage.userIdCard = d.id_card
                                 isVerified = true;
                             }
+                            if(d.balance !== undefined) {
+                                // 格式化为两位小数
+                                usercenterpage.userBalance = Number(d.balance).toFixed(2)
+                            }
 
 
                             // 如果后端有返回头像链接，也可以更新头像
@@ -225,6 +233,51 @@ FluPage {
             "uid": appWindow.currentUid, // 务必确保登录时已保存了 currentUid
             "field": fieldType,          // 例如 "name", "phone"
             "value": newValue
+        }
+        xhr.send(JSON.stringify(data))
+    }
+
+
+    // -------------------------------------------------
+    // [新增] 提交充值请求
+    // -------------------------------------------------
+    function submitRecharge(amount) {
+        // 1. 简单校验
+        var num = parseFloat(amount)
+        if (isNaN(num) || num <= 0) {
+            showError("请输入有效的充值金额")
+            return
+        }
+
+        var xhr = new XMLHttpRequest()
+        var url = backendBaseUrl + "/api/user/recharge" // 请确保后端有此接口
+        xhr.open("POST", url, true)
+        xhr.setRequestHeader("Content-Type", "application/json")
+
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState === XMLHttpRequest.DONE) {
+                if (xhr.status === 200) {
+                    try {
+                        var response = JSON.parse(xhr.responseText)
+                        if(response.status === "success") {
+                            showSuccess("充值成功")
+                            // 充值成功后，重新拉取用户信息以更新余额
+                            fetchUserInfo()
+                        } else {
+                            showError(response.message || "充值失败")
+                        }
+                    } catch(e) {
+                        showError("解析响应失败")
+                    }
+                } else {
+                    showError("网络请求失败")
+                }
+            }
+        }
+
+        var data = {
+            "uid": appWindow.currentUid,
+            "amount": num
         }
         xhr.send(JSON.stringify(data))
     }
@@ -326,6 +379,45 @@ FluPage {
             submitVerify(verifyDialog.inputName, verifyDialog.inputId)
         }
     }
+
+    // [新增] 充值弹窗
+    FluContentDialog {
+        id: rechargeDialog
+        title: "账户充值"
+        message: "请输入您要充值的金额 (CNY)"
+        buttonFlags: FluContentDialogType.NegativeButton | FluContentDialogType.PositiveButton
+        negativeText: "取消"
+        positiveText: "确认充值"
+
+        property string inputAmount: ""
+
+        contentDelegate: Component {
+            Item {
+                implicitWidth: parent.width
+                implicitHeight: 50
+
+                FluTextBox {
+                    anchors.centerIn: parent
+                    width: parent.width - 40
+                    placeholderText: "请输入金额，例如 100"
+
+                    // 绑定输入
+                    text: rechargeDialog.inputAmount
+                    onTextChanged: rechargeDialog.inputAmount = text
+
+                    // 限制只能输入数字和小数点（可选）
+                    // validator: DoubleValidator { bottom: 0.01; top: 100000.00; decimals: 2 }
+
+                    Component.onCompleted: forceActiveFocus()
+                }
+            }
+        }
+
+        onPositiveClicked: {
+            submitRecharge(rechargeDialog.inputAmount)
+        }
+    }
+
 
     // 返回按钮 (保留你原有的代码)
     FluIconButton {
@@ -456,6 +548,54 @@ FluPage {
                     }
                 }
             }
+            // -------------------------------------------------
+            // [新增] 账户钱包卡片
+            // -------------------------------------------------
+            FluText {
+                text: "账户钱包"
+                font: FluTextStyle.Subtitle
+                Layout.fillWidth: true
+                Layout.topMargin: 10
+            }
+
+            Rectangle {
+                Layout.fillWidth: true
+                height: walletCol.height + 20
+                radius: 15
+                // 保持与其他卡片一致的背景色逻辑
+                color: FluTheme.dark ? Qt.rgba(255,255,255,0.05) : "white"
+                border.color: FluTheme.dividerColor
+                border.width: 1
+
+                ColumnLayout {
+                    id: walletCol
+                    anchors.top: parent.top
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    anchors.margins: 10
+                    spacing: 0
+
+                    // 余额显示行
+                    InfoRow {
+                        // 使用 Money 图标，如果没有可以用 Savings 或 PaymentCard
+                        icon: FluentIcons.Money
+                        title: "账户余额"
+                        // 显示余额，带人民币符号
+                        value: "¥ " + usercenterpage.userBalance
+                        showBottomLine: false // 只有一行，不需要底线
+
+                        // 点击整个行触发充值，保持交互一致性
+                        onClicked: {
+                            rechargeDialog.inputAmount = ""
+                            rechargeDialog.open()
+                        }
+
+                        // 可选：如果你想在右侧明确显示“充值”字样而不是箭头
+                        // 可以修改 InfoRow 组件，或者直接利用 InfoRow 的现有结构，
+                        // 用户点击箭头或整行都会认为是“去处理余额”即充值。
+                    }
+                }
+            }
 
             // -------------------------------------------------
             // 3. 联系信息卡片
@@ -579,6 +719,7 @@ FluPage {
                     }
                 }
             }
+
 
         }
     }
