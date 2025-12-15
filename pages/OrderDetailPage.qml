@@ -19,6 +19,7 @@ FluPage {
     property string arrTime: "" // 格式: "11:45"
     property double price: 0
     property int status: 0 // 0:待支付, 1:已完成
+    property string seat_number: ""
 
     // 辅助处理函数 (保留原有的字符串处理)
     function getCityName(str) { return str ? str.replace(/\(.*\)/, "").replace("机场", "").trim() : "" }
@@ -158,6 +159,12 @@ FluPage {
                         }
 
                         Text {
+                            text: "座位号： " + root.seat_number
+                            color: "#666"; font.pixelSize: 14
+                            Layout.fillWidth: true
+                        }
+
+                        Text {
                             text: "预计出发时间:  " + root.depTime
                             color: "#666"; font.pixelSize: 14
                             elide: Text.ElideRight
@@ -182,8 +189,16 @@ FluPage {
                         // 乘机人UID (左侧)
                         FluIcon { iconSource: FluentIcons.Contact; iconSize: 16; color: "#999" }
                         Text {
-                            text: "乘机人UID: " + appWindow.currentUid;
+                            text: "乘机人: " + (appWindow.userTrueName ? appWindow.userTrueName : "未实名");
                             color: "#999"; font.pixelSize: 14
+                        }
+
+                        // 第三行：乘机证件号码
+                        Text {
+                            // 如果没有身份证号，显示提示
+                            text: "乘机证件号码： " + (appWindow.userIdCard ? getMaskedIdCard(appWindow.userIdCard) : "未绑定")
+                            font.pixelSize: 13
+                            color: "#999"
                         }
 
                         Item { Layout.fillWidth: true }

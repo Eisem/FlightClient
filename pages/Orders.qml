@@ -33,7 +33,7 @@ FluPage {
         if (appWindow.currentUid === "") return
 
         var xhr = new XMLHttpRequest()
-        var url = backendBaseUrl + "/api/orders"
+        var url = backendBaseUrl + "/api/get_orders"
         xhr.open("POST", url, true)
         xhr.setRequestHeader("Content-Type", "application/json")
 
@@ -91,7 +91,7 @@ FluPage {
 
         // 构建后端需要的参数
         var data = {
-            "uid": parseInt(appWindow.currentUid),
+            "user_id": parseInt(appWindow.currentUid),
             "order_id": orderId // 这里透传 model 中的 order_id
         }
         xhr.send(JSON.stringify(data))
@@ -121,10 +121,10 @@ FluPage {
     // === 数据模型 (微调：补全了 arr_time 以便动态显示) ===
     ListModel {
         id: orderModel
-        ListElement { order_id: "ORD20251202001"; flight_number: "CA1234"; dep_city: "珠海(ZUH)"; arr_city: "北京(BJS)"; dep_time: "2025-12-05 08:30"; arr_time: "11:45"; price: 1250; status: 0 }
-        ListElement { order_id: "ORD20251128099"; flight_number: "CZ5678"; dep_city: "上海(SHA)"; arr_city: "成都(CTU)"; dep_time: "2025-11-28 14:00"; arr_time: "17:20"; price: 980; status: 1 }
-        ListElement { order_id: "ORD20251015022"; flight_number: "MU2233"; dep_city: "广州(CAN)"; arr_city: "西安(XIY)"; dep_time: "2025-10-15 09:15"; arr_time: "12:10"; price: 880; status: 1 }
-        ListElement { order_id: "ORD20251205088"; flight_number: "ZH9988"; dep_city: "深圳(SZX)"; arr_city: "杭州(HGH)"; dep_time: "2025-12-06 18:00"; arr_time: "20:15"; price: 1100; status: 0 }
+        ListElement { order_id: 1; flight_number: "CA1234"; dep_city: "珠海(ZUH)"; arr_city: "北京(BJS)"; dep_time: "2025-12-05 08:30"; arr_time: "11:45"; price: 1250; status: 0; seat_number: "12A"}
+        ListElement { order_id: 2; flight_number: "CZ5678"; dep_city: "上海(SHA)"; arr_city: "成都(CTU)"; dep_time: "2025-11-28 14:00"; arr_time: "17:20"; price: 980; status: 1; seat_number: "12A"}
+        ListElement { order_id: 3; flight_number: "MU2233"; dep_city: "广州(CAN)"; arr_city: "西安(XIY)"; dep_time: "2025-10-15 09:15"; arr_time: "12:10"; price: 880; status: 1; seat_number: "12A"}
+        ListElement { order_id: 4; flight_number: "ZH9988"; dep_city: "深圳(SZX)"; arr_city: "杭州(HGH)"; dep_time: "2025-12-06 18:00"; arr_time: "20:15"; price: 1100; status: 0; seat_number: "12A"}
     }
 
     ColumnLayout {
@@ -214,7 +214,7 @@ FluPage {
                                        (currentFilterIndex === 2 && model.status === 1)
 
                 width: orderListView.width - 40
-                anchors.horizontalCenter: parent.horizontalCenter
+                x: (orderListView.width - width) / 2
 
                 // 显隐逻辑
                 height: isMatch ? 170 : 0 // 稍微增加高度以容纳日期
@@ -238,7 +238,7 @@ FluPage {
                         anchors.leftMargin: 16; anchors.rightMargin: 16
 
                         FluText {
-                            text: "订单号: " + model.order_id
+                            text: "订单号: " + model.order_id.toString().padStart(8, '0')
                             color: "#999999"; font.pixelSize: 12
                             anchors.verticalCenter: parent.verticalCenter; anchors.left: parent.left
                         }
@@ -411,7 +411,8 @@ FluPage {
                                         "depTime": model.dep_time,
                                         "arrTime": model.arr_time,
                                         "price": parseFloat(model.price), // 确保转为数字
-                                        "status": model.status
+                                        "status": model.status,
+                                        "seat_number": model.seat_number
                                     })
                                 }
                             }

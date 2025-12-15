@@ -35,6 +35,11 @@ FluPage {
         return h + "时" + m + "分";
     }
 
+    function getMaskedIdCard(idStr) {
+        if (!idStr || idStr.length < 10) return ""
+        return idStr.substring(0, 3) + "***********" + idStr.substring(idStr.length - 4)
+    }
+
     function generateSeatNumber(isOutbound) {
         // 简单的模拟生成座位号逻辑
         var row = Math.floor(Math.random() * 30) + 1;
@@ -208,22 +213,68 @@ FluPage {
 
     // B. 乘车人卡片
     component PassengerCard : Rectangle {
-        Layout.fillWidth: true; height: 60; radius: 8
+        Layout.fillWidth: true
+        // 高度改为自适应内容高度 + 上下边距 (大约 100px)
+        Layout.preferredHeight: innerCol.implicitHeight + 32
+        radius: 8
         color: FluTheme.dark ? Qt.rgba(45/255, 45/255, 45/255, 1) : "#FFFFFF"
         FluShadow { radius: 8; elevation: 2; color: "#11000000" }
 
-        RowLayout {
-            anchors.fill: parent; anchors.margins: 16
-            Text { text: "乘机人"; font.pixelSize: 14; color: "#999" }
-            Item { width: 10 }
-            Text { text: "UID: " + (appWindow.currentUid || "未登录"); font.pixelSize: 16; font.bold: true; color: FluTheme.fontPrimaryColor }
-            Text {
-                text: "成人票"; font.pixelSize: 12; color: "#0086F6"
-                Rectangle { anchors.fill: parent; anchors.margins: -4; color: "transparent"; border.color: "#0086F6"; radius: 4 }
-                Layout.leftMargin: 10
+        ColumnLayout {
+            id: innerCol
+            anchors.fill: parent
+            anchors.margins: 16
+            spacing: 15 // 行与行之间的间距
+
+            // 第二行：姓名 + 标签 + (右侧舱位)
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: 10
+
+                // 真实姓名
+                Text {
+                    text: appWindow.userTrueName || "未实名"
+                    font.pixelSize: 16
+                    font.bold: false
+                    color: FluTheme.fontPrimaryColor
+                }
+
+                // "成人票" 标签
+                Rectangle {
+                    width: tagTxt.contentWidth + 12
+                    height: 20
+                    radius: 4
+                    color: "transparent"
+                    border.color: "#0086F6"
+                    border.width: 1
+
+                    Text {
+                        id: tagTxt
+                        anchors.centerIn: parent
+                        text: "成人票"
+                        font.pixelSize: 11
+                        color: "#0086F6"
+                    }
+                }
+
+                // 弹簧占位
+                Item { Layout.fillWidth: true }
+
+                // 舱位显示 (放在这一行的最右边比较合适)
+                Text {
+                    text: root.currentSeatClass
+                    font.pixelSize: 14
+                    color: "#666"
+                }
             }
-            Item { Layout.fillWidth: true }
-            Text { text: root.currentSeatClass; font.pixelSize: 14; color: "#666" }
+
+            // 第三行：乘机证件号码
+            Text {
+                // 如果没有身份证号，显示提示
+                text: "乘机证件号码： " + (appWindow.userIdCard ? getMaskedIdCard(appWindow.userIdCard) : "未绑定")
+                font.pixelSize: 13
+                color: "#666"
+            }
         }
     }
 
@@ -477,6 +528,19 @@ FluPage {
                 font.bold: true; font.pixelSize: 18
                 onClicked: handleSubmitOrder()
             }
+        }
+    }
+
+    // =========================================================
+    // 在此处实例化支付弹窗
+    // =========================================================
+    PayDialog {
+        id: payPopup
+        // 当支付成功后，可以决定是跳转还是刷新，这里简单演示打印
+        onPaymentSuccess: {
+            console.log("BookingPage received payment success signal")
+            // 例如：跳转回订单列表页
+            nav_view.push("qrc:/qt/qml/FlightClient/pages/Orders.qml")
         }
     }
 }

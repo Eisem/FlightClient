@@ -153,6 +153,10 @@ FluPage {
                                 usercenterpage.userBalance = Number(d.balance).toFixed(2)
                             }
 
+                            // 同步到全局 appWindow，这样 BookingPage 就能拿到了！
+                            if(d.truename) appWindow.userTrueName = d.truename
+                            if(d.id_card)  appWindow.userIdCard = d.id_card
+
 
                             // 如果后端有返回头像链接，也可以更新头像
                             // if(d.avatar) usercenterpage.avatarSource = d.avatar

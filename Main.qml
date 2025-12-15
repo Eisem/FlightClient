@@ -14,6 +14,8 @@ FluWindow {
     // === 新增: 全局存储 UID ===
     // 所有页面都可以通过 appWindow.currentUid 访问
     property string currentUid: ""
+    property string userTrueName: ""
+    property string userIdCard: ""
 
     Loader {
         id: pageLoader
