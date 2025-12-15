@@ -33,7 +33,7 @@ FluPage {
         if (appWindow.currentUid === "") return
 
         var xhr = new XMLHttpRequest()
-        var url = backendBaseUrl + "/api/orders"
+        var url = backendBaseUrl + "/api/get_orders"
         xhr.open("POST", url, true)
         xhr.setRequestHeader("Content-Type", "application/json")
 
@@ -91,7 +91,7 @@ FluPage {
 
         // 构建后端需要的参数
         var data = {
-            "uid": parseInt(appWindow.currentUid),
+            "user_id": parseInt(appWindow.currentUid),
             "order_id": orderId // 这里透传 model 中的 order_id
         }
         xhr.send(JSON.stringify(data))
