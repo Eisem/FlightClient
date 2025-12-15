@@ -124,14 +124,6 @@ FluPage {
                 }
             }
 
-            FluPaneItem {
-                title: "历史记录"
-                icon: FluentIcons.History
-                url: "qrc:/qt/qml/FlightClient/pages/HistoryPage.qml"
-                onTap: {
-                    nav_view.push(url)
-                }
-            }
 
             FluPaneItem {
                 title: "智能客服"
@@ -147,6 +139,15 @@ FluPage {
 
         // 底部菜单项（通常放设置或退出登录）
         footerItems: FluObject {
+            FluPaneItem {
+                title: "关于我们"
+                icon: FluentIcons.Connect
+                url: "qrc:/qt/qml/FlightClient/pages/About.qml"
+                onTap: {
+                    nav_view.push(url)
+                }
+            }
+
             FluPaneItem {
                 title: "退出登录"
                 icon: FluentIcons.SignOut
