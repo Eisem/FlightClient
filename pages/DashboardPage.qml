@@ -75,9 +75,12 @@ FluPage {
             }
 
             FluTextButton {
-                text: "登录"
+                text: "个人中心"
+                textColor: "black"
+                font.bold: true
+                font.pixelSize: 15
                 onClicked: {
-                    dashboard.clickLoginButton()
+                    dashboard.clickUserCenterButton()
                 }
             }
         }

@@ -20,7 +20,7 @@ FluWindow {
     Loader {
         id: pageLoader
         anchors.fill: parent
-        source: "pages/DashboardPage.qml"
+        source: "pages/LoginPage.qml"
     }
     Connections {
         target: pageLoader.item
