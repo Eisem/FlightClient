@@ -25,6 +25,10 @@ FluPage {
     function getCityName(str) { return str ? str.replace(/\(.*\)/, "").replace("机场", "").trim() : "" }
     function getDate(fullTime) { return fullTime ? fullTime.split(" ")[0] : "" }
     function getTime(fullTime) { return fullTime ? fullTime.split(" ")[1] : fullTime }
+    function getMaskedIdCard(idStr) {
+        if (!idStr || idStr.length < 10) return ""
+        return idStr.substring(0, 3) + "***********" + idStr.substring(idStr.length - 4)
+    }
 
     // =========================================================
     // 2. UI 界面
@@ -189,7 +193,7 @@ FluPage {
                         // 乘机人UID (左侧)
                         FluIcon { iconSource: FluentIcons.Contact; iconSize: 16; color: "#999" }
                         Text {
-                            text: "乘机人: " + (appWindow.userTrueName ? appWindow.userTrueName : "未实名");
+                            text: "乘机人: " + appWindow.userTrueName || "未实名"
                             color: "#999"; font.pixelSize: 14
                         }
 

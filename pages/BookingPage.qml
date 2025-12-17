@@ -63,6 +63,10 @@ FluPage {
             showError("用户未登录");
             return;
         }
+        if (appWindow.userTrueName === "") {
+            showError("用户未实名认证，请实名认证后再购票");
+            return;
+        }
         showLoading("正在占座并创建订单...");
         var outId = "";
         var inId = "";
@@ -540,6 +544,7 @@ FluPage {
             console.log("BookingPage received payment success signal")
             // 例如：跳转回订单列表页
             nav_view.push("qrc:/qt/qml/FlightClient/pages/Orders.qml")
+            nav_view.setCurrentIndex((1));
         }
     }
 }

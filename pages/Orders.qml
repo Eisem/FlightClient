@@ -16,7 +16,7 @@ FluPage {
         // 当支付成功信号触发时，刷新订单列表
         onPaymentSuccess: {
             console.log("支付成功，正在刷新订单列表...")
-            ordersPage.fetchOrders() // 重新拉取数据，状态会变为“已支付”
+            root.fetchOrders() // 重新拉取数据，状态会变为“已支付”
         }
     }
 

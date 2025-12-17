@@ -17,6 +17,38 @@ FluWindow {
     property string userTrueName: ""
     property string userIdCard: ""
 
+    function fetchUserInfo() {
+        console.log("全局正在获取用户信息... UID:", appWindow.currentUid)
+        if (!appWindow.currentUid) return
+
+        var xhr = new XMLHttpRequest()
+        var url = "http://localhost:8080/api/user/info"
+        xhr.open("POST", url, true)
+        xhr.setRequestHeader("Content-Type", "application/json")
+
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
+                try {
+                    var response = JSON.parse(xhr.responseText)
+                    if (response.status === "success" && response.data) {
+                        var d = response.data
+                        // === 更新全局属性 ===
+                        if(d.truename) appWindow.userTrueName = d.truename
+                        if(d.id_card) {
+                            appWindow.userIdCard = d.id_card
+                            // appWindow.isVerified = true
+                        }
+                        console.log("全局用户信息更新完毕")
+                    }
+                } catch (e) {
+                    console.log("JSON解析失败:", e)
+                }
+            }
+        }
+        var data = { "uid": appWindow.currentUid }
+        xhr.send(JSON.stringify(data))
+    }
+
     Loader {
         id: pageLoader
         anchors.fill: parent
@@ -30,6 +62,7 @@ FluWindow {
         function onLoginSuccessSignal() {
             // 登录成功后，跳转到 Dashboard
             console.log("登录成功，UID:", appWindow.currentUid)
+            fetchUserInfo()
             appWindow.gotoDashboard()
         }
     }

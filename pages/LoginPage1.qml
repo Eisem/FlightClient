@@ -16,6 +16,11 @@ FluPage {
     // 用于显示错误信息的变量
     property string errorMessage: ""
 
+    function getMaskedIdCard(idStr) {
+        if (!idStr || idStr.length < 10) return ""
+        return idStr.substring(0, 3) + "***********" + idStr.substring(idStr.length - 4)
+    }
+
     // === 核心逻辑: JS 实现的 HTTP 请求 ===
     function performLogin(username, password) {
         if(!useBackend.checked){
