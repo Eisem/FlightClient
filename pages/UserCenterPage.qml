@@ -169,6 +169,7 @@ FluPage {
                         console.log("JSON解析失败:", e)
                     }
                 } else {
+                    console.log("网络请求失败: " + xhr.message)
                     console.log("网络请求失败: " + xhr.status)
                 }
             }

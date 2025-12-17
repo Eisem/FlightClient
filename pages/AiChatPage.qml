@@ -102,17 +102,88 @@ FluPage {
     }
 
     // 发送消息给后端
+    // function sendMessage() {
+    //     var msg = inputArea.text.trim()
+    //     if (msg === "") return
+
+    //     // 1. 先显示自己的消息
+    //     appendMessage(type_ME, msg)
+    //     inputArea.text = "" // 清空输入框
+
+    //     // 2. 准备网络请求
+    //     var xhr = new XMLHttpRequest()
+    //     var url = backendBaseUrl + "/api/ai_chat" // 你的后端接口地址
+
+    //     xhr.open("POST", url, true)
+    //     xhr.setRequestHeader("Content-Type", "application/json")
+
+    //     xhr.onreadystatechange = function() {
+    //         if (xhr.readyState === XMLHttpRequest.DONE) {
+    //             if (xhr.status === 200) {
+    //                 try {
+    //                     var response = JSON.parse(xhr.responseText)
+    //                     // 假设后端返回 { "status": "success", "reply": "AI的回复内容..." }
+    //                     if (response.status === "success" && response.data.chat) {
+    //                         appendMessage(type_AI, response.data.chat)
+    //                     } else {
+    //                         appendMessage(type_AI, "抱歉，我现在有点糊涂了。(后端格式错误)")
+    //                     }
+    //                 } catch (e) {
+    //                     appendMessage(type_AI, "数据解析错误")
+    //                 }
+    //             } else {
+    //                 appendMessage(type_AI, "网络连接失败: " + xhr.status)
+    //             }
+    //             // 收到回复后保存一次，防止崩溃丢失
+    //             saveHistory()
+    //         }
+    //     }
+
+    //     // 3. 构建发送数据 (UID 单独放在 Body 中)
+    //     var data = {
+    //         "message": msg               // 聊天内容
+    //     }
+
+    //     console.log("发送AI消息:", JSON.stringify(data))
+    //     xhr.send(JSON.stringify(data))
+    // }
+
+    // 发送消息给后端
     function sendMessage() {
         var msg = inputArea.text.trim()
         if (msg === "") return
 
-        // 1. 先显示自己的消息
+        // 1. 先在界面上显示自己的消息 (此时 chatModel.count 增加了 1)
         appendMessage(type_ME, msg)
         inputArea.text = "" // 清空输入框
 
-        // 2. 准备网络请求
+        // 2. 准备历史记录 (Context)
+        var historyList = []
+        // 注意：遍历范围是 0 到 count - 2。
+        // 因为刚刚 appendMessage 把当前这条加到了最后 (index = count-1)，
+        // 而当前这条通过 "message" 字段发送，不能在 history 里重复，否则 AI 会看到你说两遍。
+        for (var i = 0; i < chatModel.count - 1; i++) {
+            var item = chatModel.get(i)
+            // 映射角色：ME -> user, AI -> assistant
+            var role = (item.type === type_ME) ? "user" : "assistant"
+
+            // 过滤掉错误的或空的内容，保证请求干净
+            if(item.content){
+                historyList.push({
+                    "role": role,
+                    "content": item.content
+                })
+            }
+        }
+
+        // 限制历史记录长度（可选）：防止 token 消耗过大，比如只发最近 20 条
+        if (historyList.length > 20) {
+            historyList = historyList.slice(historyList.length - 20)
+        }
+
+        // 3. 准备网络请求
         var xhr = new XMLHttpRequest()
-        var url = backendBaseUrl + "/api/ai_chat" // 你的后端接口地址
+        var url = backendBaseUrl + "/api/ai_chat"
 
         xhr.open("POST", url, true)
         xhr.setRequestHeader("Content-Type", "application/json")
@@ -122,29 +193,34 @@ FluPage {
                 if (xhr.status === 200) {
                     try {
                         var response = JSON.parse(xhr.responseText)
-                        // 假设后端返回 { "status": "success", "reply": "AI的回复内容..." }
-                        if (response.status === "success" && response.data.chat) {
-                            appendMessage(type_AI, response.data.chat)
+                        if (response.status === "success" && response.data) {
+                            // 优先显示 data.chat (AI回复)
+                            if (response.data.chat) {
+                                appendMessage(type_AI, response.data.chat)
+                            }
+                            // 如果后端还返回了结构化的航班数据 data.data，也可以在这里处理
+                            // 比如显示一个特殊的卡片 (目前先略过，只显示文本)
                         } else {
-                            appendMessage(type_AI, "抱歉，我现在有点糊涂了。(后端格式错误)")
+                            appendMessage(type_AI, "AI 暂时没有回应。")
                         }
                     } catch (e) {
+                        console.log("解析错误:", e)
                         appendMessage(type_AI, "数据解析错误")
                     }
                 } else {
                     appendMessage(type_AI, "网络连接失败: " + xhr.status)
                 }
-                // 收到回复后保存一次，防止崩溃丢失
-                saveHistory()
+                saveHistory() // 保存记录
             }
         }
 
-        // 3. 构建发送数据 (UID 单独放在 Body 中)
+        // 4. 构建包含 history 的完整数据
         var data = {
-            "message": msg               // 聊天内容
+            "message": msg,
+            "history": historyList  // <--- 核心新增：带上历史
         }
 
-        console.log("发送AI消息:", JSON.stringify(data))
+        console.log("发送AI消息(带上下文):", JSON.stringify(data))
         xhr.send(JSON.stringify(data))
     }
 
