@@ -145,21 +145,21 @@ FluPage {
     // 防止超出屏幕的部分挡住其他窗口
     clip: true
 
-    FluIconButton{
-        iconSource: FluentIcons.ChromeBack
-        iconSize: 15
-        text:"返回主页" // 鼠标悬停时显示
+    // FluIconButton{
+    //     iconSource: FluentIcons.ChromeBack
+    //     iconSize: 15
+    //     text:"返回主页" // 鼠标悬停时显示
 
-        // 定位到左上角
-        anchors.left: parent.left
-        anchors.top: parent.top
-        anchors.topMargin: 5
-        anchors.leftMargin: 8
+    //     // 定位到左上角
+    //     anchors.left: parent.left
+    //     anchors.top: parent.top
+    //     anchors.topMargin: 5
+    //     anchors.leftMargin: 8
 
-        onClicked: {
-            loginPage.loginBackClicked()
-        }
-    }
+    //     onClicked: {
+    //         loginPage.loginBackClicked()
+    //     }
+    // }
 
     FluFrame{
         id: loginBox
