@@ -143,6 +143,14 @@ FluPage {
         // 底部菜单项（通常放设置或退出登录）
         footerItems: FluObject {
             FluPaneItem {
+                title: "管理员入口"
+                icon: FluentIcons.Connect
+                onTap:{
+                    pageLoader.source = "pages/AdminDashboardPage.qml"
+                }
+            }
+
+            FluPaneItem {
                 title: "关于我们"
                 icon: FluentIcons.Connect
                 url: "qrc:/qt/qml/FlightClient/pages/About.qml"
@@ -159,6 +167,8 @@ FluPage {
                     // 或者直接重置 Loader
                     // 这里假设 Main.qml 有一个 logout() 函数
                     appWindow.currentUid = ""
+                    appWindow.userTrueName = ""
+                    appWindow.userIdCard = ""
                     pageLoader.source = "pages/LoginPage.qml"
                 }
             }
