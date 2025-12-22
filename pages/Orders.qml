@@ -20,6 +20,20 @@ FluPage {
         }
     }
 
+    FluContentDialog {
+        id: delete_confirm_dialog
+        property string o_id : ""
+        title: "删除确认"
+        message: "您确定要删除吗？\n\n删除后订单将不可恢复。"
+        positiveText: "确定删除"
+        negativeText: "取消"
+
+        // 当用户点击“确定”时，执行删除逻辑
+        onPositiveClicked: {
+            deleteOrder(o_id)
+        }
+    }
+
 // === 2. 页面加载时获取数据 ===
     Component.onCompleted: {
         fetchOrders()
@@ -61,6 +75,8 @@ FluPage {
 
     // 【新增】删除订单函数
     function deleteOrder(orderId) {
+        console.log("start delete orders")
+        console.log(orderId)
         // 这里可以加一个确认弹窗，为了简单直接演示核心逻辑：
         var xhr = new XMLHttpRequest()
         var url = backendBaseUrl + "/api/delete_order" // 你的后端删除接口
@@ -99,6 +115,8 @@ FluPage {
 
 
 
+
+
     // === 2. 核心动画逻辑 (保留原逻辑) ===
     SequentialAnimation {
         id: refreshAnim
@@ -124,7 +142,7 @@ FluPage {
         ListElement { order_id: 1; flight_number: "CA1234"; dep_city: "珠海(ZUH)"; arr_city: "北京(BJS)"; dep_time: "2025-12-05 08:30"; arr_time: "11:45"; price: 1250; status: 0; seat_number: "12A"}
         ListElement { order_id: 2; flight_number: "CZ5678"; dep_city: "上海(SHA)"; arr_city: "成都(CTU)"; dep_time: "2025-11-28 14:00"; arr_time: "17:20"; price: 980; status: 1; seat_number: "12A"}
         ListElement { order_id: 3; flight_number: "MU2233"; dep_city: "广州(CAN)"; arr_city: "西安(XIY)"; dep_time: "2025-10-15 09:15"; arr_time: "12:10"; price: 880; status: 1; seat_number: "12A"}
-        ListElement { order_id: 4; flight_number: "ZH9988"; dep_city: "深圳(SZX)"; arr_city: "杭州(HGH)"; dep_time: "2025-12-06 18:00"; arr_time: "20:15"; price: 1100; status: 0; seat_number: "12A"}
+        ListElement { order_id: 4; flight_number: "ZH9988"; dep_city: "深圳(SZX)"; arr_city: "杭州(HGH)"; dep_time: "2025-12-06 18:00"; arr_time: "20:15"; price: 1100; status: 2; seat_number: "12A"}
     }
 
     ColumnLayout {
@@ -185,7 +203,8 @@ FluPage {
                         }
                         FilterTab { text: "全部"; index: 0 }
                         FilterTab { text: "待支付"; index: 1 }
-                        FilterTab { text: "已完成"; index: 2 }
+                        FilterTab { text: "已付款"; index: 2 }
+                        FilterTab { text: "已退款"; index: 3 }
                     }
                 }
                 Item { Layout.fillWidth: true }
@@ -211,7 +230,8 @@ FluPage {
                 // 筛选逻辑
                 property bool isMatch: (currentFilterIndex === 0) ||
                                        (currentFilterIndex === 1 && model.status === 0) ||
-                                       (currentFilterIndex === 2 && model.status === 1)
+                                       (currentFilterIndex === 2 && model.status === 1) ||
+                                       (currentFilterIndex === 3 && model.status === 2)
 
                 width: orderListView.width - 40
                 x: (orderListView.width - width) / 2
@@ -251,7 +271,8 @@ FluPage {
 
                             Text {
                                 anchors.centerIn: parent
-                                text: model.status === 0 ? "待支付" : "已完成"
+                                text: model.status === 0 ? "待支付" : model.status === 1 ? "已完成":"已退款"
+
                                 color: model.status === 0 ? "#FF9500" : "#4CAF50"
                                 font.pixelSize: 12; font.bold: true
                             }
@@ -390,10 +411,13 @@ FluPage {
                                 text: "删除订单"
                                 height: 32
                                 // 只有已完成(状态1)或已取消的订单可以删除
-                                visible: (model.status === 1 || model.status === "已完成")
+                                visible: (model.status === 1 || model.status === "已完成" ||model.status === 2)
                                 onClicked: {
-                                    // 调用上面定义的删除函数
-                                    root.deleteOrder(model.order_id)
+                                    // 1. 将当前点击行的 order_id 赋值给弹窗的临时属性
+                                    delete_confirm_dialog.o_id = model.order_id.toString()
+
+                                    // 2. 打开弹窗
+                                    delete_confirm_dialog.open()
                                 }
                             }
 

@@ -32,7 +32,7 @@ FluScrollablePage {
             }
 
             FluText {
-                text: "FlightClient"
+                text: "long哥航班管理"
                 font.pixelSize: 28
                 font.bold: true
                 Layout.alignment: Qt.AlignHCenter

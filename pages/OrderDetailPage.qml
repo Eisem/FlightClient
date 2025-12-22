@@ -30,6 +30,62 @@ FluPage {
         return idStr.substring(0, 3) + "***********" + idStr.substring(idStr.length - 4)
     }
 
+
+    // =========================================================
+        // [新增] 确认退款弹窗
+        // =========================================================
+    FluContentDialog {
+        id: refund_confirm_dialog
+        title: "退款确认"
+        message: "您确定要申请退款吗？\n\n退款后订单将不可恢复，款项将原路返回。"
+        positiveText: "确定退款"
+        negativeText: "取消"
+
+        // 当用户点击“确定”时，执行退款逻辑
+        onPositiveClicked: {
+            root.refundOrder()
+        }
+    }
+
+
+    function refundOrder() {
+        // 这里可以加一个确认弹窗，为了简单直接演示核心逻辑：
+        var xhr = new XMLHttpRequest()
+        var url = backendBaseUrl + "/api/refund_order" // 你的后端删除接口
+
+        xhr.open("POST", url, true)
+        xhr.setRequestHeader("Content-Type", "application/json")
+
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState === XMLHttpRequest.DONE) {
+                if (xhr.status === 200) {
+                    try {
+                        var response = JSON.parse(xhr.responseText)
+                        if (response.status === "success") {
+                            showSuccess("订单退款成功")
+                        } else {
+                            showError(response.message || "退款失败")
+                        }
+                    } catch (e) {
+                        showError("服务器响应解析失败")
+                    }
+                } else {
+                    showError("网络请求失败: " + xhr.status)
+                }
+            }
+        }
+
+        // 构建后端需要的参数
+        var data = {
+            "user_id": parseInt(appWindow.currentUid),
+            "order_id": root.orderId
+        }
+        console.log("user_id",data.user_id , "order_id ",data.order_id)
+        xhr.send(JSON.stringify(data))
+    }
+
+
+
     // =========================================================
     // 2. UI 界面
     // =========================================================
@@ -77,7 +133,7 @@ FluPage {
 
                 Text {
                     Layout.alignment: Qt.AlignCenter
-                    text: root.status === 1 ? "订单已完成" : "等待支付"
+                    text: root.status === 1 ? "订单已完成" : root.status === 2 ? "退款成功" : "等待支付"
                     font.pixelSize: 24
                     font.bold: true
                     color: FluTheme.fontPrimaryColor
@@ -234,6 +290,14 @@ FluPage {
                     text: "联系客服"
                     onClicked: showInfo("请拨打 95588")
                 }
+                FluButton {
+                    text: "去退款"
+                    visible: root.status === 1;
+                    onClicked: {
+                        refund_confirm_dialog.open();
+                    }
+                }
+
             }
         }
     }
