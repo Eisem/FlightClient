@@ -128,8 +128,8 @@ FluPage {
                 icon: FluentIcons.SignOut
                 onTap: {
                     // 这里的逻辑与 Dashboard 类似，重置 Loader 到登录页
-                    appWindow.currentUid = ""
-                    pageLoader.source = "pages/LoginPage.qml"
+                    appWindow.currentUid = "1"
+                    pageLoader.source = "pages/DashboardPage.qml"
                 }
             }
         }
