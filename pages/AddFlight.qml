@@ -20,29 +20,56 @@ FluScrollablePage {
         readonly property bool hasValidInput: text !== "" && text !== hint
     }
 
-    // === 1. 数据模型 (保持不变) ===
+    // === 1. 数据模型  ===
     ListModel {
         id: cityModel
+
         ListElement { name: "北京(BJS)"; code: "BJS" }
         ListElement { name: "上海(SHA)"; code: "SHA" }
         ListElement { name: "广州(CAN)"; code: "CAN" }
         ListElement { name: "深圳(SZX)"; code: "SZX" }
+        ListElement { name: "珠海(ZUH)"; code: "ZUH" }
         ListElement { name: "成都(CTU)"; code: "CTU" }
         ListElement { name: "杭州(HGH)"; code: "HGH" }
-        ListElement { name: "武汉(WUH)"; code: "WUH" }
+        ListElement { name: "昆明(KMG)"; code: "KMG" }
         ListElement { name: "西安(XIY)"; code: "XIY" }
         ListElement { name: "重庆(CKG)"; code: "CKG" }
-        ListElement { name: "青岛(TAO)"; code: "TAO" }
-        ListElement { name: "长沙(CSX)"; code: "CSX" }
+        ListElement { name: "武汉(WUH)"; code: "WUH" }
         ListElement { name: "南京(NKG)"; code: "NKG" }
         ListElement { name: "厦门(XMN)"; code: "XMN" }
-        ListElement { name: "昆明(KMG)"; code: "KMG" }
+        ListElement { name: "长沙(CSX)"; code: "CSX" }
+        ListElement { name: "海口(HAK)"; code: "HAK" }
+        ListElement { name: "三亚(SYX)"; code: "SYX" }
+        ListElement { name: "青岛(TAO)"; code: "TAO" }
         ListElement { name: "大连(DLC)"; code: "DLC" }
         ListElement { name: "天津(TSN)"; code: "TSN" }
         ListElement { name: "郑州(CGO)"; code: "CGO" }
-        ListElement { name: "三亚(SYX)"; code: "SYX" }
-        ListElement { name: "海口(HAK)"; code: "HAK" }
+        ListElement { name: "沈阳(SHE)"; code: "SHE" }
         ListElement { name: "哈尔滨(HRB)"; code: "HRB" }
+        ListElement { name: "乌鲁木齐(URC)"; code: "URC" }
+        ListElement { name: "贵阳(KWE)"; code: "KWE" }
+        ListElement { name: "南宁(NNG)"; code: "NNG" }
+        ListElement { name: "福州(FOC)"; code: "FOC" }
+        ListElement { name: "兰州(LHW)"; code: "LHW" }
+        ListElement { name: "太原(TYN)"; code: "TYN" }
+        ListElement { name: "长春(CGQ)"; code: "CGQ" }
+        ListElement { name: "南昌(KHN)"; code: "KHN" }
+        ListElement { name: "呼和浩特(HET)"; code: "HET" }
+        ListElement { name: "宁波(NGB)"; code: "NGB" }
+        ListElement { name: "温州(WNZ)"; code: "WNZ" }
+        ListElement { name: "合肥(HFE)"; code: "HFE" }
+        ListElement { name: "济南(TNA)"; code: "TNA" }
+        ListElement { name: "石家庄(SJW)"; code: "SJW" }
+        ListElement { name: "银川(INC)"; code: "INC" }
+        ListElement { name: "西宁(XNN)"; code: "XNN" }
+        ListElement { name: "拉萨(LXA)"; code: "LXA" }
+        ListElement { name: "丽江(LJG)"; code: "LJG" }
+        ListElement { name: "西双版纳(JHG)"; code: "JHG" }
+        ListElement { name: "桂林(KWL)"; code: "KWL" }
+        ListElement { name: "烟台(YNT)"; code: "YNT" }
+        ListElement { name: "泉州(JJN)"; code: "JJN" }
+        ListElement { name: "无锡(WUX)"; code: "WUX" }
+        ListElement { name: "洛阳(LYA)"; code: "LYA" }
     }
 
     // === 2. 内部状态 (保持不变) ===
@@ -70,18 +97,22 @@ FluScrollablePage {
         depDate = new Date(); arrDate = new Date()
     }
 
-    // === 3. 提交逻辑 (保持不变) ===
+    // === 核心提交函数 ===
     function submitFlight() {
-        if (!inputFlightNo.hasValidInput || !inputAirline.hasValidInput) {
-            showError("请填写航班号和航司信息"); return;
+        if (inputFlightNo.text === "" || inputAirline.text === "") {
+            showError("请填写航班号和航司信息");
+            return;
         }
         if (getCityCode(originCity) === "" || getCityCode(destCity) === "") {
-            showError("请选择有效的出发地和目的地"); return;
+            showError("请选择有效的出发地和目的地");
+            return;
         }
-        // ... (数据提交逻辑保持不变) ...
-        var data = {
+
+        console.log("开始发送添加航班请求")
+
+        var requestData = {
             "flight_number": inputFlightNo.text,
-            "origin": getCityCode(originCity),
+            "origin": getCityCode(originCity),        // 提取三字码
             "destination": getCityCode(destCity),
             "departure_date": formatDate(depDate),
             "departure_time": inputDepTime.text,
@@ -95,12 +126,41 @@ FluScrollablePage {
             "business_price": Number(inputBusPrice.text),
             "first_class_seats": Number(inputFirstSeats.text),
             "first_class_price": Number(inputFirstPrice.text),
+            // 冗余字段防止后端校验报错
             "date": formatDate(depDate)
         }
 
-        // 模拟成功
-        showSuccess("模拟添加成功: " + inputFlightNo.text);
-        resetForm();
+        var xhr = new XMLHttpRequest()
+        var url = backendBaseUrl + "/api/add_flight"
+        console.log("请求地址：" + url)
+
+        xhr.open("POST", url, true)
+        xhr.setRequestHeader("Content-Type", "application/json")
+
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState === XMLHttpRequest.DONE) {
+                if (xhr.status === 200) {
+                    try {
+                        var response = JSON.parse(xhr.responseText)
+                        if (response.status === "success") {
+                            showSuccess("航班添加成功！ID: " + response.flight_id)
+                            resetForm()
+                        } else {
+                            showError(response.message || "添加失败")
+                        }
+                    } catch (e) {
+                        console.log("Json解析失败", e)
+                        showError("服务器返回数据解析失败")
+                    }
+                } else {
+                    console.log("服务器连接失败，状态码：" + xhr.status)
+                    showError("服务器连接失败：" + xhr.status)
+                }
+            }
+        }
+
+        console.log("发送数据：", JSON.stringify(requestData))
+        xhr.send(JSON.stringify(requestData))
     }
 
     // === 4. 界面布局 ===
