@@ -18,9 +18,10 @@ FluPage {
 
     // === 核心逻辑: JS 实现的 HTTP 请求 ===
     function performLogin(username, password) {
+
         if(!useBackend.checked){
             console.log("前端本地登录")
-            appWindow.currentUid = "123"
+            appWindow.currentUid = "1"
             loginPage.loginSuccessSignal()
             return;
         }
@@ -276,7 +277,6 @@ FluPage {
         anchors.bottom: parent.bottom
         anchors.left: parent.left
     }
-
 
     // 新增并行与串行动画控制器
     // 逻辑：Component 加载完成后自动运行 (running: true)

@@ -138,6 +138,8 @@ FluPage {
             }
 
 
+
+
         }
 
         // 底部菜单项（通常放设置或退出登录）
@@ -145,6 +147,7 @@ FluPage {
             FluPaneItem {
                 title: "管理员入口"
                 icon: FluentIcons.Connect
+                visible: appWindow.currentUid === "1"
                 onTap:{
                     pageLoader.source = "pages/AdminDashboardPage.qml"
                 }
