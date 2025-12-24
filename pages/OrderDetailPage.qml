@@ -63,6 +63,7 @@ FluPage {
                         var response = JSON.parse(xhr.responseText)
                         if (response.status === "success") {
                             showSuccess("订单退款成功")
+                            nav_view.push("qrc:/qt/qml/FlightClient/pages/Orders.qml");
                         } else {
                             showError(response.message || "退款失败")
                         }
@@ -126,7 +127,15 @@ FluPage {
 
                 FluIcon {
                     Layout.alignment: Qt.AlignCenter
-                    iconSource: root.status === 1 ? FluentIcons.Completed : FluentIcons.Clock
+                    iconSource: {
+                        if (root.status === 1) {
+                            return FluentIcons.Completed
+                        } else if (root.status === 2) {
+                            return FluentIcons.History
+                        } else {
+                            return FluentIcons.PaymentCard // 或 FluentIcons.Payment (待支付)
+                        }
+                    }
                     iconSize: 40
                     color: root.status === 1 ? "#4CAF50" : "#FF9500"
                 }
@@ -193,7 +202,7 @@ FluPage {
 
                         Text {
                             // Layout.alignment: Qt.AlignCenter
-                            text: "订单号:  " + root.orderId
+                            text: "订单号:  " + root.orderId.toString().padStart(8, '0')
                             font.pixelSize: 14
                             color: "#666"
                         }

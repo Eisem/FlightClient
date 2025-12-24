@@ -110,15 +110,6 @@ FluPage {
                 }
             }
 
-            // 功能 3：删除航班
-            FluPaneItem {
-                title: "删除航班"
-                icon: FluentIcons.Delete
-                url: "qrc:/qt/qml/FlightClient/pages/DeleteFlight.qml"
-                onTap: {
-                    nav_view.push(url)
-                }
-            }
         }
 
         // 底部菜单项（退出登录）

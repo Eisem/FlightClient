@@ -99,12 +99,25 @@ FluScrollablePage {
 
     // === 核心提交函数 ===
     function submitFlight() {
-        if (inputFlightNo.text === "" || inputAirline.text === "") {
-            showError("请填写航班号和航司信息");
+        if (!inputFlightNo.hasValidInput || !inputAirline.hasValidInput || !inputModel.hasValidInput) {
+            showError("请完善基本信息（航班号、航司、机型）");
             return;
         }
+
         if (getCityCode(originCity) === "" || getCityCode(destCity) === "") {
             showError("请选择有效的出发地和目的地");
+            return;
+        }
+
+        if (!inputDepTime.hasValidInput || !inputArrTime.hasValidInput) {
+            showError("请填写起飞和降落的具体时间");
+            return;
+        }
+
+        if (!inputEcoSeats.hasValidInput || !inputEcoPrice.hasValidInput ||
+            !inputBusSeats.hasValidInput || !inputBusPrice.hasValidInput ||
+            !inputFirstSeats.hasValidInput || !inputFirstPrice.hasValidInput) {
+            showError("请补全所有舱位等级的座位数和价格");
             return;
         }
 
@@ -131,7 +144,7 @@ FluScrollablePage {
         }
 
         var xhr = new XMLHttpRequest()
-        var url = backendBaseUrl + "/api/add_flight"
+        var url = backendBaseUrl + "/api/admin/add_flight"
         console.log("请求地址：" + url)
 
         xhr.open("POST", url, true)

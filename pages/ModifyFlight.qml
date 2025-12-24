@@ -28,6 +28,7 @@ FluScrollablePage {
     // === 2. 城市数据模型 (公用) ===
     ListModel {
         id: cityModel
+
         ListElement { name: "北京(BJS)"; code: "BJS" }
         ListElement { name: "上海(SHA)"; code: "SHA" }
         ListElement { name: "广州(CAN)"; code: "CAN" }
@@ -46,7 +47,34 @@ FluScrollablePage {
         ListElement { name: "三亚(SYX)"; code: "SYX" }
         ListElement { name: "青岛(TAO)"; code: "TAO" }
         ListElement { name: "大连(DLC)"; code: "DLC" }
-        // ... 其他城市可按需补充
+        ListElement { name: "天津(TSN)"; code: "TSN" }
+        ListElement { name: "郑州(CGO)"; code: "CGO" }
+        ListElement { name: "沈阳(SHE)"; code: "SHE" }
+        ListElement { name: "哈尔滨(HRB)"; code: "HRB" }
+        ListElement { name: "乌鲁木齐(URC)"; code: "URC" }
+        ListElement { name: "贵阳(KWE)"; code: "KWE" }
+        ListElement { name: "南宁(NNG)"; code: "NNG" }
+        ListElement { name: "福州(FOC)"; code: "FOC" }
+        ListElement { name: "兰州(LHW)"; code: "LHW" }
+        ListElement { name: "太原(TYN)"; code: "TYN" }
+        ListElement { name: "长春(CGQ)"; code: "CGQ" }
+        ListElement { name: "南昌(KHN)"; code: "KHN" }
+        ListElement { name: "呼和浩特(HET)"; code: "HET" }
+        ListElement { name: "宁波(NGB)"; code: "NGB" }
+        ListElement { name: "温州(WNZ)"; code: "WNZ" }
+        ListElement { name: "合肥(HFE)"; code: "HFE" }
+        ListElement { name: "济南(TNA)"; code: "TNA" }
+        ListElement { name: "石家庄(SJW)"; code: "SJW" }
+        ListElement { name: "银川(INC)"; code: "INC" }
+        ListElement { name: "西宁(XNN)"; code: "XNN" }
+        ListElement { name: "拉萨(LXA)"; code: "LXA" }
+        ListElement { name: "丽江(LJG)"; code: "LJG" }
+        ListElement { name: "西双版纳(JHG)"; code: "JHG" }
+        ListElement { name: "桂林(KWL)"; code: "KWL" }
+        ListElement { name: "烟台(YNT)"; code: "YNT" }
+        ListElement { name: "泉州(JJN)"; code: "JJN" }
+        ListElement { name: "无锡(WUX)"; code: "WUX" }
+        ListElement { name: "洛阳(LYA)"; code: "LYA" }
     }
 
     // === 3. 辅助函数 ===
