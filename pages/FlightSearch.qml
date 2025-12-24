@@ -200,6 +200,19 @@ FluScrollablePage {
 
                             for(var i = 0; i < list.length; i ++){
                                 var item = list[i];
+
+                                // === 【修改点】根据选中的舱位决定显示的价格 ===
+                                var displayPrice = item.economy_price
+
+                                if (selectedClass === "经济舱") {
+                                    displayPrice = item.economy_price
+                                } else if (selectedClass === "商务舱") {
+                                    displayPrice = item.business_price
+                                } else if (selectedClass === "头等舱") {
+                                    displayPrice = item.first_class_price
+                                }
+                                // ==========================================
+
                                 resultModel.append({
                                     "flight_number": item.flight_number,
                                     "airline": item.airline,
@@ -208,7 +221,7 @@ FluScrollablePage {
                                     "landing_time": item.landing_time,
                                     "dep_airport": currentFrom + "机场",
                                     "arr_airport": currentTo + "机场",
-                                    "price": item.price,
+                                    "price": displayPrice,
                                     "flight_id": item.id
                                 })
                             }
