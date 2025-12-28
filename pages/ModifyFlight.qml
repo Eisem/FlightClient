@@ -303,14 +303,6 @@ FluScrollablePage {
         spacing: 20
         Layout.topMargin: 20
 
-        // 标题
-        Text {
-            text: isEditMode ? "修改航班信息" : "搜索并管理航班"
-            font.pixelSize: 24
-            font.bold: true
-            color: FluTheme.fontPrimaryColor
-        }
-
         // --------------------------------------------------------------------
         //  VIEW 1: 搜索面板 (仅在 !isEditMode 时显示)
         // --------------------------------------------------------------------

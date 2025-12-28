@@ -21,7 +21,7 @@ FluScrollablePage {
             Layout.topMargin: 20
 
             Image {
-                source: "qrc:/qt/qml/FlightClient/figures/logo.png" // 确保路径对
+                source: "qrc:/qt/qml/FlightClient/figures/logo1.png" // 确保路径对
                 Layout.preferredWidth: 100
                 Layout.preferredHeight: 100
                 fillMode: Image.PreserveAspectFit
@@ -77,29 +77,29 @@ FluScrollablePage {
 
                     // 只需要在这里改名字即可
                     MemberItem {
-                            name: "张三"; role: "组长 / 后端架构"
-                            avatar_source: "qrc:/qt/qml/FlightClient/figures/123.jpg"
+                            name: "shop1111"; role: "后端架构/数据库设计"
+                            avatar_source: "qrc:/qt/qml/FlightClient/figures/ava3.jpg"
                             Layout.fillWidth: true
                             Layout.preferredWidth: 1
                         }
 
                         MemberItem {
-                            name: "李四"; role: "前端开发 (QML)"
-                            avatar_source: "qrc:/qt/qml/FlightClient/figures/123.jpg"
+                            name: "Eisem"; role: "前端开发/UI设计"
+                            avatar_source: "qrc:/qt/qml/FlightClient/figures/ava4.jpg"
                             Layout.fillWidth: true
                             Layout.preferredWidth: 1
                         }
 
                         MemberItem {
-                            name: "王五"; role: "数据库设计"
-                            avatar_source: "qrc:/qt/qml/FlightClient/figures/123.jpg"
+                            name: "001-Elsa"; role: "后端架构/数据库设计"
+                            avatar_source: "qrc:/qt/qml/FlightClient/figures/ava1.png"
                             Layout.fillWidth: true
                             Layout.preferredWidth: 1
                         }
 
                         MemberItem {
-                            name: "赵六"; role: "测试与文档"
-                            avatar_source: "qrc:/qt/qml/FlightClient/figures/123.jpg"
+                            name: "zlhahaha"; role: "前端开发/UI设计"
+                            avatar_source: "qrc:/qt/qml/FlightClient/figures/ava2.png"
                             Layout.fillWidth: true
                             Layout.preferredWidth: 1
                         }

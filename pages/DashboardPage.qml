@@ -39,14 +39,14 @@ FluPage {
             // --- 把头像和标题搬到这里来 ---
             Image {
                 // 你的头像路径
-                source: "qrc:/qt/qml/FlightClient/figures/logo.png"
+                source: "qrc:/qt/qml/FlightClient/figures/logo1.png"
                 Layout.preferredWidth: 32
                 Layout.preferredHeight: 32
                 fillMode: Image.PreserveAspectFit
             }
 
             Text {
-                text: "🐉哥航班查询"
+                text: "逸仙航班查询"
                 font.pixelSize: 16
                 font.bold: true
                 color: "#333333"

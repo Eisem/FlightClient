@@ -37,7 +37,7 @@ FluPage {
 
             // Logo 和 标题
             Image {
-                source: "qrc:/qt/qml/FlightClient/figures/logo.png" // 保持 Logo 一致
+                source: "qrc:/qt/qml/FlightClient/figures/logo1.png" // 保持 Logo 一致
                 Layout.preferredWidth: 32
                 Layout.preferredHeight: 32
                 fillMode: Image.PreserveAspectFit

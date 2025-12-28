@@ -19,12 +19,12 @@ FluPage {
     // === 核心逻辑: JS 实现的 HTTP 请求 ===
     function performLogin(username, password) {
 
-        if(!useBackend.checked){
-            console.log("前端本地登录")
-            appWindow.currentUid = "1"
-            loginPage.loginSuccessSignal()
-            return;
-        }
+        // if(useBackend.checked){
+        //     console.log("前端本地登录")
+        //     appWindow.currentUid = "1"
+        //     loginPage.loginSuccessSignal()
+        //     return;
+        // }
         console.log("尝试连接后端登录")
 
         // 1. 清空之前的错误
@@ -291,7 +291,7 @@ FluPage {
             property: "opacity"
             from: 0
             to: 1
-            duration: 300     // 持续 800 毫秒
+            duration: 800     // 持续 800 毫秒
             easing.type: Easing.OutCubic // 缓动曲线：先快后慢
         }
 
@@ -302,7 +302,7 @@ FluPage {
             property: "anchors.verticalCenterOffset"
             from: 150
             to: 0
-            duration: 300
+            duration: 800
             easing.type: Easing.OutBack // 缓动曲线：带一点回弹效果，更有动感
         }
 
@@ -312,7 +312,7 @@ FluPage {
             property: "opacity"
             from: 0
             to: 1
-            duration: 300
+            duration: 500
         }
     }
 }

@@ -28,8 +28,14 @@ qt_add_qml_module(appFlightClient
         pages/RegisterPage.qml
     RESOURCES
         figures/logo.png
+        figures/logo1.png
         figures/loginBackground.png
         figures/123.jpg
+        figures/ava1.png
+        figures/ava2.png
+        figures/ava3.jpg
+        figures/ava4.jpg
+        figures/mrtx.png
         QML_FILES
         QML_FILES pages/UserCenterPage.qml
         QML_FILES pages/Avatar.qml
